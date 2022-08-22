@@ -27,6 +27,7 @@
 		"webpack-cli": "^4.10.0"
 	},
 	"dependencies": {
+		"@flaticon/flaticon-uicons": "^1.7.0",
 		"lodash": "^4.17.21"
 	}
 }

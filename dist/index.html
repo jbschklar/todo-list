@@ -5,9 +5,73 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Document</title>
+		<link
+			rel="stylesheet"
+			href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css"
+		/>
 	</head>
 	<body>
-		<script src="./bundle.js"></script>
-		<h1>To-do list</h1>
+		<script src="./bundle.js" defer></script>
+		<header>
+			<h1>Your Todo Lists</h1>
+		</header>
+		<aside>
+			<div class="dropdown">
+				<div class="btn-lable">
+					<button type="button" class="collapsible">
+						<i class="fi fi-rr-minus-small"></i>
+					</button>
+					<p>Today</p>
+				</div>
+				<ul class="drop-list">
+					<li>Studying</li>
+					<li>House Stuff</li>
+					<li>Wedding Planning</li>
+				</ul>
+			</div>
+
+			<div class="dropdown">
+				<div class="btn-lable">
+					<button type="button" class="collapsible">
+						<i class="fi fi-rr-minus-small"></i>
+					</button>
+					<p>Tomorrow</p>
+				</div>
+				<ul class="drop-list">
+					<li>Studying</li>
+					<li>House Stuff</li>
+					<li>Wedding Planning</li>
+				</ul>
+			</div>
+
+			<div class="dropdown">
+				<div class="btn-lable">
+					<button type="button" class="collapsible">
+						<i class="fi fi-rr-minus-small"></i>
+					</button>
+					<p>This Week</p>
+				</div>
+				<ul class="drop-list">
+					<li>Studying</li>
+					<li>House Stuff</li>
+					<li>Wedding Planning</li>
+				</ul>
+			</div>
+
+			<div class="dropdown">
+				<div class="btn-lable">
+					<button type="button" class="collapsible">
+						<i class="fi fi-rr-minus-small"></i>
+					</button>
+					<p>Projects</p>
+				</div>
+				<ul class="drop-list">
+					<li>Studying</li>
+					<li>House Stuff</li>
+					<li>Wedding Planning</li>
+				</ul>
+			</div>
+		</aside>
+		<div class="main-display"></div>
 	</body>
 </html>
