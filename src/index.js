@@ -9,7 +9,10 @@ const collapseBtns = document.querySelectorAll(".collapsible");
 collapseBtns.forEach((btn) => {
 	btn.addEventListener("click", (e) => {
 		// for todo's in main display area notes
-		if (e.target.classList.contains("fi-rr-notebook")) {
+		if (
+			e.target.closest("svg") &&
+			e.target.closest("svg").classList.contains("notebook")
+		) {
 			const notes = e.target.closest(".dropdown").querySelector(".todo-notes");
 			notes.classList.toggle("active");
 			return;
@@ -17,7 +20,7 @@ collapseBtns.forEach((btn) => {
 		// for todo steps and aside category dropdowns
 		const target = e.target.closest(".collapsible");
 		const list = target.nextElementSibling;
-		const icons = target.querySelectorAll("i");
+		const icons = target.querySelectorAll(".dropdown-icon");
 		list.classList.toggle("active");
 		icons.forEach((icon) => {
 			icon.classList.toggle("active");
