@@ -1,16 +1,22 @@
 "use strict";
 import _ from "lodash";
 import "./style.css";
-
+// view variables
 const collapseBtns = document.querySelectorAll(".collapsible");
 
+// to toggle collapsible lists of todos and projects
+// view code
 collapseBtns.forEach((btn) => {
 	btn.addEventListener("click", (e) => {
 		console.log("click");
-		const list = e.target.closest(".btn-lable").nextElementSibling;
-
+		const target = e.target.closest(".collapsible");
+		const list = target.nextElementSibling;
+		const icons = target.querySelectorAll("i");
+		console.log(icons);
 		list.classList.toggle("active");
-		console.log(list.classList);
+		icons.forEach((icon) => {
+			icon.classList.toggle("active");
+		});
 	});
 });
 

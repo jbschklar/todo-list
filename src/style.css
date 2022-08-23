@@ -42,19 +42,35 @@ aside ul {
 	flex-direction: column;
 	gap: 15px;
 }
-.btn-lable {
+
+.collapsible {
 	display: flex;
 	gap: 15px;
 	align-items: center;
 	justify-content: flex-start;
 }
 
-.collapsible {
-	border: none;
-	background: none;
+button {
+	height: 5px;
+	width: 10px;
 }
 
-.drop-list {
+.todo-steps {
+	margin-left: 60px;
+	list-style: none;
+}
+.todo-steps li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.drop-list li {
+	margin-top: 15px;
+}
+
+.drop-list,
+.dropdown-icon {
 	display: none;
 }
 
@@ -64,4 +80,15 @@ aside ul {
 
 .main-display {
 	grid-column: 1 -1;
+}
+
+.todo {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	/* border: 2px solid rgb(73, 72, 72); */
+	border-radius: 10px;
+	background-color: rgb(175, 162, 162);
+	margin: 60px 30px;
+	padding: 15px 30px;
 }

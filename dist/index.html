@@ -17,11 +17,10 @@
 		</header>
 		<aside>
 			<div class="dropdown">
-				<div class="btn-lable">
-					<button type="button" class="collapsible">
-						<i class="fi fi-rr-minus-small"></i>
-					</button>
-					<p>Today</p>
+				<div class="collapsible">
+					<i class="fi fi-rr-plus-small dropdown-icon active"></i>
+					<i class="fi fi-rr-minus-small dropdown-icon"></i>
+					<h3>Today</h3>
 				</div>
 				<ul class="drop-list">
 					<li>Studying</li>
@@ -31,11 +30,10 @@
 			</div>
 
 			<div class="dropdown">
-				<div class="btn-lable">
-					<button type="button" class="collapsible">
-						<i class="fi fi-rr-minus-small"></i>
-					</button>
-					<p>Tomorrow</p>
+				<div class="collapsible">
+					<i class="fi fi-rr-plus-small dropdown-icon active"></i>
+					<i class="fi fi-rr-minus-small dropdown-icon"></i>
+					<h3>Tomorrow</h3>
 				</div>
 				<ul class="drop-list">
 					<li>Studying</li>
@@ -45,11 +43,10 @@
 			</div>
 
 			<div class="dropdown">
-				<div class="btn-lable">
-					<button type="button" class="collapsible">
-						<i class="fi fi-rr-minus-small"></i>
-					</button>
-					<p>This Week</p>
+				<div class="collapsible">
+					<i class="fi fi-rr-plus-small dropdown-icon active"></i>
+					<i class="fi fi-rr-minus-small dropdown-icon"></i>
+					<h3>This Week</h3>
 				</div>
 				<ul class="drop-list">
 					<li>Studying</li>
@@ -59,11 +56,10 @@
 			</div>
 
 			<div class="dropdown">
-				<div class="btn-lable">
-					<button type="button" class="collapsible">
-						<i class="fi fi-rr-minus-small"></i>
-					</button>
-					<p>Projects</p>
+				<div class="collapsible">
+					<i class="fi fi-rr-plus-small dropdown-icon active"></i>
+					<i class="fi fi-rr-minus-small dropdown-icon"></i>
+					<h3>Projects</h3>
 				</div>
 				<ul class="drop-list">
 					<li>Studying</li>
@@ -72,6 +68,25 @@
 				</ul>
 			</div>
 		</aside>
-		<div class="main-display"></div>
+		<div class="main-display">
+			<div class="dropdown">
+				<div class="todo collapsible">
+					<i class="fi fi-rr-plus-small dropdown-icon active"></i>
+					<i class="fi fi-rr-minus-small dropdown-icon"></i>
+					<h2>Clean the playroom</h2>
+					<div class="todo-icons">
+						<i class="fi fi-rr-notebook"></i>
+					</div>
+					<p class="due-date">9/12/22</p>
+				</div>
+				<ul class="drop-list todo-steps">
+					<li><input type="checkbox" name="steps" id="step1" /> Studying</li>
+					<li><input type="checkbox" name="steps" id="step2" />House Stuff</li>
+					<li>
+						<input type="checkbox" name="steps" id="step3" />Wedding Planning
+					</li>
+				</ul>
+			</div>
+		</div>
 	</body>
 </html>
