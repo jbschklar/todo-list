@@ -8,16 +8,19 @@ const collapseBtns = document.querySelectorAll(".collapsible");
 // view code
 collapseBtns.forEach((btn) => {
 	btn.addEventListener("click", (e) => {
-		console.log("click");
+		// for todo's in main display area notes
+		if (e.target.classList.contains("fi-rr-notebook")) {
+			const notes = e.target.closest(".dropdown").querySelector(".todo-notes");
+			notes.classList.toggle("active");
+			return;
+		}
+		// for todo steps and aside category dropdowns
 		const target = e.target.closest(".collapsible");
 		const list = target.nextElementSibling;
 		const icons = target.querySelectorAll("i");
-		console.log(icons);
 		list.classList.toggle("active");
 		icons.forEach((icon) => {
 			icon.classList.toggle("active");
 		});
 	});
 });
-
-console.log(collapseBtns);
