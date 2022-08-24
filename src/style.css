@@ -53,10 +53,10 @@ aside ul {
 	justify-content: flex-start;
 }
 
-button {
+/* button {
 	height: 5px;
 	width: 10px;
-}
+} */
 
 .todo-icons {
 	display: flex;
@@ -70,10 +70,20 @@ button {
 	width: auto;
 }
 
+.add-checklist-icon {
+	height: 10px;
+}
+
 .todo-steps {
 	margin-left: 60px;
 	list-style: none;
 }
+
+.todo-steps button {
+	margin-top: 15px;
+	padding: 0 2px;
+}
+
 .todo-steps li {
 	display: flex;
 	align-items: center;
@@ -115,4 +125,24 @@ textarea {
 	background-color: #e7f5ff;
 	margin: 60px 30px;
 	padding: 15px 30px;
+}
+
+/* input form */
+.add-checklist-item {
+	height: fit-content;
+	width: fit-content;
+	padding: 5px;
+}
+
+form {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	border-radius: 10px;
+	background-color: #e9ecef;
+	padding: 10px 20px;
+}
+
+form button {
+	border: none;
 }
