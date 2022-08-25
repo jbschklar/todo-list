@@ -142,12 +142,12 @@ const View = (() => {
 			const list = e.target.closest(".drop-list").firstElementChild;
 			const newListItem = document.createElement("li");
 			let newStep = document.createElement("input");
-			console.log(newStep);
-			list.appendChild(newStep);
+			newListItem.appendChild(newStep);
+			list.appendChild(newListItem);
 			newStep.addEventListener("change", (e) => {
 				console.log(e.target.value);
 				newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
-				list.appendChild(newListItem);
+				// add newListItem to original todoObj
 			});
 		});
 	};
