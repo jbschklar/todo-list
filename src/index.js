@@ -148,6 +148,8 @@ const View = (() => {
 				console.log(e.target.value);
 				newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
 				// add newListItem to original todoObj
+				todoObj.checkList.push(e.target.value);
+				console.log(todoObj.checkList);
 			});
 		});
 	};
