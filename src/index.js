@@ -10,6 +10,7 @@ const View = (() => {
 	// const addCheckListItemBtn = document.querySelector(".add-checklist-item");
 	const mainContainer = document.querySelector(".todo-container");
 	const body = document.querySelector("body");
+	const createTodoBtn = document.querySelector(".create-todo-btn");
 
 	body.addEventListener("click", (e) => {
 		// for todo's in main display
@@ -120,7 +121,7 @@ const View = (() => {
     </div>`;
 		mainContainer.insertAdjacentHTML("beforeend", todo);
 	};
-
+	// renders checklist under the todo as a drop down menu from todo obj
 	const renderCheckList = function (obj) {
 		const stepList = document.querySelector(".todo-steps");
 		obj.checkList.forEach((step) => {
@@ -129,7 +130,7 @@ const View = (() => {
 			stepList.appendChild(listItem);
 		});
 	};
-
+	// updates display of checklist with new steps and updates checklist array of todoObj passed as argument
 	const updateCheckList = function (todoObj) {
 		// to add checklist steps
 		body.addEventListener("click", (e) => {
@@ -154,7 +155,19 @@ const View = (() => {
 		});
 	};
 
-	return { renderMainArea, renderCheckList, updateCheckList };
+	const createTempObj = function (constructor, todoArr) {
+		createTodoBtn.addEventListener("click", (e) => {
+			e.preventDefault();
+			console.log("click");
+			const title = document.getElementById("title").value;
+			const dueDate = document.getElementById("due-date").value;
+			const newTodo = constructor({ title, dueDate });
+			todoArr.push(newTodo);
+			console.log(todoArr);
+			// return { title, dueDate };
+		});
+	};
+	return { renderMainArea, renderCheckList, updateCheckList, createTempObj };
 })();
 
 let tempObj = {
@@ -170,25 +183,28 @@ const Model = (() => {
 		return {
 			title: obj.title,
 			dueDate: obj.dueDate,
-			checkList: obj.checkList,
-			notes: obj.notes,
+			checkList: [],
+			notes: "",
 		};
 	};
 
-	const todos = [];
-	return { createTodo, todos };
+	const todosArr = [];
+	return { createTodo, todosArr };
 })();
 
 // Controller //////////////////////////////////////////////////////
 
-let todo = Model.createTodo(tempObj);
-Model.todos.push(todo);
-// console.log(Model.todos);
+// let todo = Model.createTodo(tempObj);
+// Model.todos.push(todo);
+// // console.log(Model.todos);
 
-console.log(todo.checkList);
+// console.log(todo.checkList);
 
-Model.todos.forEach((todo) => {
-	View.renderMainArea(todo);
-	View.renderCheckList(todo);
-	View.updateCheckList(todo);
-});
+// Model.todosArr.forEach((todo) => {
+// 	View.renderMainArea(todo);
+// 	View.renderCheckList(todo);
+// 	View.updateCheckList(todo);
+// });
+
+// fn to create todos from form and add to todosArr
+View.createTempObj(Model.createTodo, Model.todosArr);
