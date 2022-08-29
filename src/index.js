@@ -85,7 +85,7 @@ const View = (() => {
             </svg>
         </div>
     </div>
-    <div class="drop-list">
+    <div class="drop-list ${obj.id}">
         <ul class="todo-steps">
             <li><h3>Checklist</h3></li>
         </ul>
@@ -134,29 +134,31 @@ const View = (() => {
 	};
 	// updates display of checklist with new steps and updates checklist array of todoObj passed as argument
 	const updateCheckList = function (todoObj) {
+		const targetList = document.querySelector(`.${todoObj.id}`);
+		console.log(targetList);
 		// to add checklist steps
-		body.addEventListener("click", (e) => {
+		targetList.addEventListener("click", (e) => {
 			if (
-				!e.target.closest("button") ||
-				!e.target.closest("button").classList.contains("add-checklist-item")
-			)
-				return;
-			console.log("works");
-			const list = e.target.closest(".drop-list").firstElementChild;
-			const newListItem = document.createElement("li");
-			let newStep = document.createElement("input");
-			newListItem.appendChild(newStep);
-			list.appendChild(newListItem);
-			newStep.addEventListener("change", (e) => {
-				console.log(e.target.value);
-				newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
-				// add newListItem to original todoObj
-				todoObj.checkList.push(e.target.value);
-				console.log(todoObj.checkList);
-			});
+				e.target.closest("button") &&
+				e.target.closest("button").classList.contains("add-checklist-item")
+			) {
+				console.log(e.target.closest(".drop-list"));
+				const list = e.target.closest(".drop-list").firstElementChild;
+				const newListItem = document.createElement("li");
+				const newStep = document.createElement("input");
+				newListItem.appendChild(newStep);
+				list.appendChild(newListItem);
+
+				newStep.addEventListener("change", (e) => {
+					console.log(e.target.value);
+					newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
+					// add newListItem to original todoObj
+					todoObj.checkList.push(e.target.value);
+					// console.log(todoObj.checkList);
+				});
+			}
 		});
 	};
-
 	//this needs to be split into a handler function and a createTempObj function from from inputs
 	const createTempObj = function (constructor, todoArr) {
 		createTodoBtn.addEventListener("click", (e) => {
@@ -190,6 +192,7 @@ const Model = (() => {
 			dueDate: obj.dueDate,
 			checkList: [],
 			notes: "",
+			id: obj.title.replaceAll(" ", ""),
 		};
 	};
 
