@@ -18,7 +18,7 @@ const View = (() => {
 			e.target.closest("svg") &&
 			e.target.closest("svg").classList.contains("notebook")
 		) {
-			const notes = e.target.closest(".dropdown").querySelector(".todo-notes");
+			const notes = e.target.closest(".todo").querySelector(".todo-notes");
 			notes.classList.toggle("active");
 			return;
 		}
@@ -27,9 +27,7 @@ const View = (() => {
 			e.target.closest("svg") &&
 			e.target.closest("svg").classList.contains("checklist-icon")
 		) {
-			const checkList = e.target
-				.closest(".dropdown")
-				.querySelector(".drop-list");
+			const checkList = e.target.closest(".todo").querySelector(".drop-list");
 			checkList.classList.toggle("active");
 			return;
 		}
@@ -45,7 +43,9 @@ const View = (() => {
 	});
 
 	const renderMainArea = function (obj) {
-		const todo = `<div class="todo collapsible">
+		const todo = `
+        <div class="todo">
+        <div class="collapsible">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             id="Layer_1"
@@ -118,7 +118,9 @@ const View = (() => {
             rows="10"
             placeholder="Notes"
         ></textarea>
-    </div>`;
+    </div>
+    </div>
+    `;
 		mainContainer.insertAdjacentHTML("beforeend", todo);
 	};
 	// renders checklist under the todo as a drop down menu from todo obj
@@ -155,6 +157,7 @@ const View = (() => {
 		});
 	};
 
+	//this needs to be split into a handler function and a createTempObj function from from inputs
 	const createTempObj = function (constructor, todoArr) {
 		createTodoBtn.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -164,7 +167,9 @@ const View = (() => {
 			const newTodo = constructor({ title, dueDate });
 			todoArr.push(newTodo);
 			console.log(todoArr);
-			// return { title, dueDate };
+			renderMainArea(newTodo);
+			renderCheckList(newTodo);
+			updateCheckList(newTodo);
 		});
 	};
 	return { renderMainArea, renderCheckList, updateCheckList, createTempObj };
@@ -207,4 +212,11 @@ const Model = (() => {
 // });
 
 // fn to create todos from form and add to todosArr
+const todoHandler = function () {
+	const newTodo = console.log(newTodo);
+	// Model.todosArr.push(newTodo);
+	// View.renderMainArea(newTodo);
+};
+
+// todoHandler();
 View.createTempObj(Model.createTodo, Model.todosArr);
