@@ -7,6 +7,7 @@ const View = (() => {
 	const mainContainer = document.querySelector(".todo-container");
 	const body = document.querySelector("body");
 	const createTodoBtn = document.querySelector(".create-todo-btn");
+	const createProjectBtn = document.querySelector(".create-project-btn");
 
 	// to toggle dropdowns
 	body.addEventListener("click", (e) => {
@@ -155,26 +156,44 @@ const View = (() => {
 			}
 		});
 	};
-	//creates tempObj from form to send to controller fn
-	const createTempObj = () => {
+
+	//creates tempObj from todo form to send to controller fn
+	const todoFormInputs = () => {
 		const title = document.getElementById("title").value;
 		const dueDate = document.getElementById("due-date").value;
 		return { title, dueDate };
 	};
 
-	// adds event handler for the add step button on checklists
+	// creates obj with title from project form to send to controller
+	const projectFormInput = () => {
+		const title = document.getElementById("project-title").value;
+		return { title };
+	};
+
+	// adds event handler for the add todo button on form
 	const addHandlerNewTodo = function (handler) {
 		createTodoBtn.addEventListener("click", (e) => {
 			e.preventDefault();
 			handler();
 		});
 	};
+
+	// adds event handler for the add roject button on form
+	const addHandlerNewProject = function (handler) {
+		createProjectBtn.addEventListener("click", (e) => {
+			e.preventDefault();
+			handler();
+		});
+	};
+
 	return {
 		renderMainArea,
 		renderCheckList,
 		updateCheckList,
+		todoFormInputs,
+		projectFormInput,
 		addHandlerNewTodo,
-		createTempObj,
+		addHandlerNewProject,
 	};
 })();
 
@@ -197,18 +216,24 @@ const Model = (() => {
 		};
 	};
 
+	const createProject = function (obj) {
+		return {
+			title: obj.title,
+			todos: [],
+		};
+	};
+
 	const projectsArr = [];
 
 	const todosArr = [];
-	return { createTodo, todosArr, projectsArr };
+	return { createTodo, createProject, todosArr, projectsArr };
 })();
 
 // Controller //////////////////////////////////////////////////////
 
 // fn to create todos from form and add to todosArr
 const controlNewTodos = function () {
-	console.log("click");
-	const newTodo = Model.createTodo(View.createTempObj());
+	const newTodo = Model.createTodo(View.todoFormInputs());
 	Model.todosArr.push(newTodo);
 	console.log(Model.todosArr);
 	View.renderMainArea(newTodo);
@@ -216,8 +241,16 @@ const controlNewTodos = function () {
 	View.updateCheckList(newTodo);
 };
 
+const controlNewProjects = function () {
+	console.log("new project");
+	const newProject = Model.createProject(View.projectFormInput());
+	Model.projectsArr.push(newProject);
+	console.log(Model.projectsArr);
+};
+
 const init = () => {
 	View.addHandlerNewTodo(controlNewTodos);
+	View.addHandlerNewProject(controlNewProjects);
 };
 
 init();
