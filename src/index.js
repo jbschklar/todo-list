@@ -2,18 +2,15 @@
 import _, { update } from "lodash";
 import "./style.css";
 
-// to toggle collapsible lists of todos and projects
 // View code ////////////////////////////////////////////////////////////////////////
 const View = (() => {
-	// view variables
-	// const collapseBtns = document.querySelectorAll(".collapsible");
-	// const addCheckListItemBtn = document.querySelector(".add-checklist-item");
 	const mainContainer = document.querySelector(".todo-container");
 	const body = document.querySelector("body");
 	const createTodoBtn = document.querySelector(".create-todo-btn");
 
+	// to toggle dropdowns
 	body.addEventListener("click", (e) => {
-		// for todo's in main display
+		// for notes section of todo's in main display
 		if (
 			e.target.closest("svg") &&
 			e.target.closest("svg").classList.contains("notebook")
@@ -22,7 +19,7 @@ const View = (() => {
 			notes.classList.toggle("active");
 			return;
 		}
-		// // for checklist
+		// for checklist
 		if (
 			e.target.closest("svg") &&
 			e.target.closest("svg").classList.contains("checklist-icon")
@@ -110,7 +107,7 @@ const View = (() => {
             </svg>
         </button>
     </div>
-    <div class="todo-notes">
+    <div class="todo-notes" ${obj.id}>
         <textarea
             name="notes"
             class="notes"
@@ -148,33 +145,37 @@ const View = (() => {
 				const newStep = document.createElement("input");
 				newListItem.appendChild(newStep);
 				list.appendChild(newListItem);
-
+				// changes input to submitted step on 'enter'
 				newStep.addEventListener("change", (e) => {
 					console.log(e.target.value);
 					newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
 					// add newListItem to original todoObj
 					todoObj.checkList.push(e.target.value);
-					// console.log(todoObj.checkList);
 				});
 			}
 		});
 	};
-	//this needs to be split into a handler function and a createTempObj function from from inputs
-	const createTempObj = function (constructor, todoArr) {
+	//creates tempObj from form to send to controller fn
+	const createTempObj = () => {
+		const title = document.getElementById("title").value;
+		const dueDate = document.getElementById("due-date").value;
+		return { title, dueDate };
+	};
+
+	// adds event handler for the add step button on checklists
+	const addHandlerNewTodo = function (handler) {
 		createTodoBtn.addEventListener("click", (e) => {
 			e.preventDefault();
-			console.log("click");
-			const title = document.getElementById("title").value;
-			const dueDate = document.getElementById("due-date").value;
-			const newTodo = constructor({ title, dueDate });
-			todoArr.push(newTodo);
-			console.log(todoArr);
-			renderMainArea(newTodo);
-			renderCheckList(newTodo);
-			updateCheckList(newTodo);
+			handler();
 		});
 	};
-	return { renderMainArea, renderCheckList, updateCheckList, createTempObj };
+	return {
+		renderMainArea,
+		renderCheckList,
+		updateCheckList,
+		addHandlerNewTodo,
+		createTempObj,
+	};
 })();
 
 let tempObj = {
@@ -196,30 +197,27 @@ const Model = (() => {
 		};
 	};
 
+	const projectsArr = [];
+
 	const todosArr = [];
-	return { createTodo, todosArr };
+	return { createTodo, todosArr, projectsArr };
 })();
 
 // Controller //////////////////////////////////////////////////////
 
-// let todo = Model.createTodo(tempObj);
-// Model.todos.push(todo);
-// // console.log(Model.todos);
-
-// console.log(todo.checkList);
-
-// Model.todosArr.forEach((todo) => {
-// 	View.renderMainArea(todo);
-// 	View.renderCheckList(todo);
-// 	View.updateCheckList(todo);
-// });
-
 // fn to create todos from form and add to todosArr
-const todoHandler = function () {
-	const newTodo = console.log(newTodo);
-	// Model.todosArr.push(newTodo);
-	// View.renderMainArea(newTodo);
+const controlNewTodos = function () {
+	console.log("click");
+	const newTodo = Model.createTodo(View.createTempObj());
+	Model.todosArr.push(newTodo);
+	console.log(Model.todosArr);
+	View.renderMainArea(newTodo);
+	View.renderCheckList(newTodo);
+	View.updateCheckList(newTodo);
 };
 
-// todoHandler();
-View.createTempObj(Model.createTodo, Model.todosArr);
+const init = () => {
+	View.addHandlerNewTodo(controlNewTodos);
+};
+
+init();
