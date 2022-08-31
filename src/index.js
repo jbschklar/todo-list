@@ -123,37 +123,28 @@ const View = (() => {
 	};
 	// renders checklist under the todo as a drop down menu from todo obj
 	const renderCheckList = function (obj) {
-		const stepList = document.querySelector(".todo-steps");
+		const stepList = document
+			.querySelector(`.${obj.id}`)
+			.querySelector(".todo-steps");
 		obj.checkList.forEach((step) => {
 			const listItem = document.createElement("li");
 			listItem.innerHTML = `<input type="checkbox" name="steps" id="steps" /> ${step}`;
 			stepList.appendChild(listItem);
 		});
 	};
-	// updates display of checklist with new steps and updates checklist array of todoObj passed as argument
-	const updateCheckList = function (todoObj) {
-		const targetList = document.querySelector(`.${todoObj.id}`);
+
+	// adds event handler to update checklist displayed on rendered todo and updates todo obj via the handler
+	const addHandlerChecklistUpdate = function (handler, todo) {
+		const targetList = document.querySelector(`.${todo.id}`);
 		console.log(targetList);
 		// to add checklist steps
 		targetList.addEventListener("click", (e) => {
+			const target = e.target;
 			if (
-				e.target.closest("button") &&
-				e.target.closest("button").classList.contains("add-checklist-item")
-			) {
-				console.log(e.target.closest(".drop-list"));
-				const list = e.target.closest(".drop-list").firstElementChild;
-				const newListItem = document.createElement("li");
-				const newStep = document.createElement("input");
-				newListItem.appendChild(newStep);
-				list.appendChild(newListItem);
-				// changes input to submitted step on 'enter'
-				newStep.addEventListener("change", (e) => {
-					console.log(e.target.value);
-					newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
-					// add newListItem to original todoObj
-					todoObj.checkList.push(e.target.value);
-				});
-			}
+				target.closest("button") &&
+				target.closest("button").classList.contains("add-checklist-item")
+			)
+				handler(todo, target);
 		});
 	};
 
@@ -189,11 +180,11 @@ const View = (() => {
 	return {
 		renderMainArea,
 		renderCheckList,
-		updateCheckList,
 		todoFormInputs,
 		projectFormInput,
 		addHandlerNewTodo,
 		addHandlerNewProject,
+		addHandlerChecklistUpdate,
 	};
 })();
 
@@ -206,6 +197,11 @@ let tempObj = {
 
 // Model code //////////////////////////////////////////////////////
 const Model = (() => {
+	const state = {
+		todosArr: [],
+		projectsArr: [],
+	};
+
 	const createTodo = function (obj) {
 		return {
 			title: obj.title,
@@ -223,10 +219,34 @@ const Model = (() => {
 		};
 	};
 
-	const projectsArr = [];
+	// let projectsArr = [];
 
-	const todosArr = [];
-	return { createTodo, createProject, todosArr, projectsArr };
+	// let todosArr = [];
+
+	const persistTodos = function () {
+		localStorage.setItem("todos", JSON.stringify(state.todosArr));
+	};
+
+	const persistProjects = function () {
+		localStorage.setItem("projects", JSON.stringify(state.projectsArr));
+	};
+
+	const initFromStorage = function () {
+		const todoStorage = localStorage.getItem("todos");
+		const projectStorage = localStorage.getItem("projects");
+		if (todoStorage) state.todosArr = JSON.parse(todoStorage);
+
+		if (projectStorage) state.projectsArr = JSON.parse(projectStorage);
+	};
+
+	return {
+		state,
+		createTodo,
+		createProject,
+		persistTodos,
+		persistProjects,
+		initFromStorage,
+	};
 })();
 
 // Controller //////////////////////////////////////////////////////
@@ -234,21 +254,50 @@ const Model = (() => {
 // fn to create todos from form and add to todosArr
 const controlNewTodos = function () {
 	const newTodo = Model.createTodo(View.todoFormInputs());
-	Model.todosArr.push(newTodo);
-	console.log(Model.todosArr);
+
+	console.log(Model.state.todosArr);
 	View.renderMainArea(newTodo);
 	View.renderCheckList(newTodo);
-	View.updateCheckList(newTodo);
+	// View.updateCheckList(newTodo);
+	View.addHandlerChecklistUpdate(controlChecklistUpdates, newTodo);
+	Model.state.todosArr.push(newTodo);
+	Model.persistTodos();
+};
+
+// updates display of checklist with new steps and updates checklist array of todo passed as argument
+const controlChecklistUpdates = function (todo, target) {
+	const list = target.closest(".drop-list").firstElementChild;
+	const newListItem = document.createElement("li");
+	const newStep = document.createElement("input");
+	newListItem.appendChild(newStep);
+	list.appendChild(newListItem);
+	// changes input to submitted step on 'enter'
+	newStep.addEventListener("change", (e) => {
+		console.log(e.target.value);
+		newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
+		// add newListItem to original todoObj
+		todo.checkList.push(e.target.value);
+		Model.persistTodos();
+	});
+	// }
 };
 
 const controlNewProjects = function () {
 	console.log("new project");
 	const newProject = Model.createProject(View.projectFormInput());
-	Model.projectsArr.push(newProject);
-	console.log(Model.projectsArr);
+	Model.state.projectsArr.push(newProject);
+	Model.persistProjects();
+	console.log(Model.state.projectsArr);
 };
 
 const init = () => {
+	Model.initFromStorage();
+	console.log(Model.state.todosArr);
+	Model.state.todosArr.forEach((todo) => {
+		View.renderMainArea(todo);
+		View.renderCheckList(todo);
+		View.addHandlerChecklistUpdate(controlChecklistUpdates, todo);
+	});
 	View.addHandlerNewTodo(controlNewTodos);
 	View.addHandlerNewProject(controlNewProjects);
 };
