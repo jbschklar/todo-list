@@ -188,13 +188,6 @@ const View = (() => {
 	};
 })();
 
-let tempObj = {
-	title: "Clean the playroom",
-	dueDate: "09/10/22",
-	checkList: ["pick up magnets", "pick up transformers", "pick up costumes"],
-	notes: "If they finish by Saturday, they get a reward.",
-};
-
 // Model code //////////////////////////////////////////////////////
 const Model = (() => {
 	const state = {
@@ -219,16 +212,26 @@ const Model = (() => {
 		};
 	};
 
-	// let projectsArr = [];
-
-	// let todosArr = [];
-
 	const persistTodos = function () {
 		localStorage.setItem("todos", JSON.stringify(state.todosArr));
 	};
 
 	const persistProjects = function () {
 		localStorage.setItem("projects", JSON.stringify(state.projectsArr));
+	};
+
+	const deleteTodo = function (id) {
+		const index = state.todosArr.findIndex((todo) => todo.id === id);
+		state.todosArr.splice(index, 1);
+		persistTodos();
+	};
+
+	const deleteProject = function (title) {
+		const index = state.projectsArr.findIndex(
+			(project) => project.title === title
+		);
+		state.projectsArr.splice(index, 1);
+		persistProjects();
 	};
 
 	const initFromStorage = function () {
@@ -239,13 +242,16 @@ const Model = (() => {
 		if (projectStorage) state.projectsArr = JSON.parse(projectStorage);
 	};
 
+	initFromStorage();
+
 	return {
 		state,
 		createTodo,
 		createProject,
+		deleteTodo,
+		deleteProject,
 		persistTodos,
 		persistProjects,
-		initFromStorage,
 	};
 })();
 
@@ -291,7 +297,6 @@ const controlNewProjects = function () {
 };
 
 const init = () => {
-	Model.initFromStorage();
 	console.log(Model.state.todosArr);
 	Model.state.todosArr.forEach((todo) => {
 		View.renderMainArea(todo);
