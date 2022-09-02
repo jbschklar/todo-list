@@ -85,7 +85,7 @@ const View = (() => {
     </div>
     <div class="drop-list ${obj.id}">
         <ul class="todo-steps">
-            <li><h3>Checklist</h3></li>
+            <h3>Checklist</h3>
         </ul>
         <button class="add-checklist-item">
             <svg
@@ -122,13 +122,15 @@ const View = (() => {
 		mainContainer.insertAdjacentHTML("beforeend", todo);
 	};
 	// renders checklist under the todo as a drop down menu from todo obj
-	const renderCheckList = function (obj) {
+	const renderCheckList = function (todo) {
 		const stepList = document
-			.querySelector(`.${obj.id}`)
+			.querySelector(`.${todo.id}`)
 			.querySelector(".todo-steps");
-		obj.checkList.forEach((step) => {
+		todo.checkList.forEach((obj) => {
 			const listItem = document.createElement("li");
-			listItem.innerHTML = `<input type="checkbox" name="steps" id="steps" /> ${step}`;
+			listItem.innerHTML = `<input type="checkbox" name="steps" id="steps" ${
+				obj.checked ? "checked" : ""
+			}/> ${obj.step}`;
 			stepList.appendChild(listItem);
 		});
 	};
@@ -157,6 +159,21 @@ const View = (() => {
 				const target = e.target;
 				handler(todo, target);
 			});
+		});
+	};
+
+	const addHandlerChecked = function (handler, todo) {
+		const targetList = document.querySelector(`.${todo.id}`);
+		const checkBoxes = targetList.querySelectorAll("ul input");
+
+		checkBoxes.forEach((checkBox) => {
+			if (checkBox.type === "checkbox") {
+				checkBox.addEventListener("change", (e) => {
+					const target = e.target.closest("li");
+					console.log(target);
+					handler(todo, stepText);
+				});
+			}
 		});
 	};
 
@@ -218,6 +235,10 @@ const Model = (() => {
 		};
 	};
 
+	const createStep = function (string) {
+		return { step: string, checked: false };
+	};
+
 	const createProject = function (obj) {
 		return {
 			title: obj.title,
@@ -240,14 +261,20 @@ const Model = (() => {
 	};
 
 	const deleteStep = function (todo, string) {
-		const index = todo.checkList.findIndex((step) => step === string);
+		const index = todo.checkList.findIndex((obj) => obj.step === string);
 		todo.checkList.splice(index, 1);
 		persistTodos();
 	};
 
 	const editStep = function (todo, oldStep, newStep) {
-		const index = todo.checkList.findIndex((step) => step === oldStep);
-		todo.checkList.splice(index, 1, newStep);
+		const index = todo.checkList.findIndex((obj) => obj.step === oldStep);
+		todo.checkList.splice(index, 1, createStep(newStep));
+		persistTodos();
+	};
+
+	const editChecked = function (todo, string) {
+		const index = todo.checkList.findIndex((step) => step === string);
+		todo.checkList.splice(index, 1, string + "*checked*");
 		persistTodos();
 	};
 
@@ -277,6 +304,7 @@ const Model = (() => {
 	return {
 		state,
 		createTodo,
+		createStep,
 		createProject,
 		deleteTodo,
 		deleteStep,
@@ -314,7 +342,8 @@ const controlChecklistUpdates = function (todo, target, targetList) {
 		console.log(e.target.value);
 		newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
 		// add newListItem to original todoObj
-		todo.checkList.push(e.target.value);
+		todo.checkList.push(Model.createStep(e.target.value));
+		console.log(todo);
 		Model.persistTodos();
 		targetList.classList.remove("lock");
 	});
@@ -324,7 +353,6 @@ const controlChecklistUpdates = function (todo, target, targetList) {
 };
 
 const controlEditSteps = function (todo, target) {
-	console.log("click");
 	const stepText = target.textContent;
 	target.innerHTML = `<input type="checkbox" name="steps" id="steps" /><input type="text" name="step-edit" id="step-edit">`;
 	const editField = document.getElementById("step-edit");
@@ -341,6 +369,10 @@ const controlEditSteps = function (todo, target) {
 		target.innerHTML = `<input type="checkbox" name="steps" id="steps" />${editField.value}`;
 		Model.editStep(todo, stepText, editField.value);
 	});
+};
+
+const controlCheckBoxes = function (todo, stepText) {
+	Model.editChecked(todo, stepText);
 };
 
 const controlNewProjects = function () {
@@ -385,3 +417,12 @@ init();
 
 // Over all:
 // 1) create buttons to hide/reveal forms for todos and projects.
+
+const testArr = [
+	{ step: "bla bla", checked: true },
+	{ step: "eat shit", checked: false },
+];
+// testArr.forEach((obj) => {
+const index = testArr.findIndex((obj) => obj.step === "bla bla");
+console.log(index);
+// });
