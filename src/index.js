@@ -1,5 +1,5 @@
 "use strict";
-import _, { update } from "lodash";
+import _, { times, update } from "lodash";
 import "./style.css";
 
 // View code ////////////////////////////////////////////////////////////////////////
@@ -136,15 +136,27 @@ const View = (() => {
 	// adds event handler to update checklist displayed on rendered todo and updates todo obj via the handler
 	const addHandlerChecklistUpdate = function (handler, todo) {
 		const targetList = document.querySelector(`.${todo.id}`);
-		console.log(targetList);
 		// to add checklist steps
 		targetList.addEventListener("click", (e) => {
 			const target = e.target;
 			if (
+				!targetList.classList.contains("lock") &&
 				target.closest("button") &&
 				target.closest("button").classList.contains("add-checklist-item")
-			)
+			) {
+				handler(todo, target, targetList);
+			}
+		});
+	};
+
+	const addHandlerEditSteps = function (handler, todo) {
+		const targetList = document.querySelector(`.${todo.id}`);
+		const steps = targetList.querySelectorAll(".todo-steps > li");
+		steps.forEach((step) => {
+			step.addEventListener("dblclick", (e) => {
+				const target = e.target;
 				handler(todo, target);
+			});
 		});
 	};
 
@@ -185,6 +197,7 @@ const View = (() => {
 		addHandlerNewTodo,
 		addHandlerNewProject,
 		addHandlerChecklistUpdate,
+		addHandlerEditSteps,
 	};
 })();
 
@@ -226,6 +239,23 @@ const Model = (() => {
 		persistTodos();
 	};
 
+	const deleteStep = function (todo, string) {
+		const index = todo.checkList.findIndex((step) => step === string);
+		todo.checkList.splice(index, 1);
+		persistTodos();
+	};
+
+	const editStep = function (todo, oldStep, newStep) {
+		const index = todo.checkList.findIndex((step) => step === oldStep);
+		todo.checkList.splice(index, 1, newStep);
+		persistTodos();
+	};
+
+	const editNote = function (todo, string) {
+		todo.notes = string;
+		persistTodos();
+	};
+
 	const deleteProject = function (title) {
 		const index = state.projectsArr.findIndex(
 			(project) => project.title === title
@@ -249,6 +279,9 @@ const Model = (() => {
 		createTodo,
 		createProject,
 		deleteTodo,
+		deleteStep,
+		editStep,
+		editNote,
 		deleteProject,
 		persistTodos,
 		persistProjects,
@@ -263,15 +296,14 @@ const controlNewTodos = function () {
 
 	console.log(Model.state.todosArr);
 	View.renderMainArea(newTodo);
-	View.renderCheckList(newTodo);
-	// View.updateCheckList(newTodo);
 	View.addHandlerChecklistUpdate(controlChecklistUpdates, newTodo);
 	Model.state.todosArr.push(newTodo);
 	Model.persistTodos();
 };
 
 // updates display of checklist with new steps and updates checklist array of todo passed as argument
-const controlChecklistUpdates = function (todo, target) {
+const controlChecklistUpdates = function (todo, target, targetList) {
+	targetList.classList.add("lock");
 	const list = target.closest(".drop-list").firstElementChild;
 	const newListItem = document.createElement("li");
 	const newStep = document.createElement("input");
@@ -284,8 +316,31 @@ const controlChecklistUpdates = function (todo, target) {
 		// add newListItem to original todoObj
 		todo.checkList.push(e.target.value);
 		Model.persistTodos();
+		targetList.classList.remove("lock");
 	});
-	// }
+	// Adds this event listener to list items once they are created since they don't exist
+	//when this is initially called during init
+	View.addHandlerEditSteps(controlEditSteps, todo);
+};
+
+const controlEditSteps = function (todo, target) {
+	console.log("click");
+	const stepText = target.textContent;
+	target.innerHTML = `<input type="checkbox" name="steps" id="steps" /><input type="text" name="step-edit" id="step-edit">`;
+	const editField = document.getElementById("step-edit");
+	editField.value = `${stepText}`;
+	editField.addEventListener("keypress", (e) => {
+		if (e.key !== "Enter") return;
+		if (editField.value === "") {
+			console.log("works");
+			Model.deleteStep(todo, stepText);
+			console.log(target.closest("li"));
+			target.closest("li").remove();
+			return;
+		}
+		target.innerHTML = `<input type="checkbox" name="steps" id="steps" />${editField.value}`;
+		Model.editStep(todo, stepText, editField.value);
+	});
 };
 
 const controlNewProjects = function () {
@@ -302,9 +357,31 @@ const init = () => {
 		View.renderMainArea(todo);
 		View.renderCheckList(todo);
 		View.addHandlerChecklistUpdate(controlChecklistUpdates, todo);
+		View.addHandlerEditSteps(controlEditSteps, todo);
 	});
 	View.addHandlerNewTodo(controlNewTodos);
 	View.addHandlerNewProject(controlNewProjects);
 };
 
 init();
+
+// Notes //
+
+// checklist additions:
+// 1) I need to limit new step inputs to one at a times. ✅
+// 2) I need to add ability to delete steps. ✅
+// 3) I need to find a way to keep checked steps checked.
+
+// I need to add event listeners to delete buttons on todos and projects.
+
+// Add ability to populate aside projects from projectsArr.
+// Add drag and drop for todos to projects in aside and/or select projects
+//      from dropdown list populated by existing projects in array.
+
+// notes additions:
+// 1) Keep notes as stored strings on todo objects.
+// 2) link them to todo via ID
+// 3) event listener on change to update object and local storage
+
+// Over all:
+// 1) create buttons to hide/reveal forms for todos and projects.
