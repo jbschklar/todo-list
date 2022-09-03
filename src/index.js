@@ -73,7 +73,8 @@ const View = (() => {
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                class="todo-icon"
+                class="todo-icon delete-todo"
+				id="${obj.id}"
             >
                 <g id="_01_align_center" data-name="01 align center">
                     <polygon
@@ -170,7 +171,7 @@ const View = (() => {
 			if (checkBox.type === "checkbox") {
 				checkBox.addEventListener("change", (e) => {
 					const target = e.target.closest("li");
-					console.log(target);
+					console.log(target, e.target.checked);
 					handler(todo, stepText);
 				});
 			}
@@ -206,6 +207,17 @@ const View = (() => {
 		});
 	};
 
+	// deletes todo from view and array via the handler
+	const addHandlerDeleteTodo = function (handler, todo) {
+		const deleteTodoBtn = document.querySelector(`#${todo.id}`);
+		deleteTodoBtn.addEventListener("click", (e) => {
+			const targetTodo = e.target.closest(".todo");
+			console.log(targetTodo);
+			handler(e.target.id);
+			targetTodo.remove();
+		});
+	};
+
 	return {
 		renderMainArea,
 		renderCheckList,
@@ -215,6 +227,7 @@ const View = (() => {
 		addHandlerNewProject,
 		addHandlerChecklistUpdate,
 		addHandlerEditSteps,
+		addHandlerDeleteTodo,
 	};
 })();
 
@@ -272,9 +285,9 @@ const Model = (() => {
 		persistTodos();
 	};
 
-	const editChecked = function (todo, string) {
-		const index = todo.checkList.findIndex((step) => step === string);
-		todo.checkList.splice(index, 1, string + "*checked*");
+	const editChecked = function (todo, string, boolean) {
+		const index = todo.checkList.findIndex((obj) => obj.step === string);
+		todo.checkList[index].checked = boolean;
 		persistTodos();
 	};
 
@@ -309,6 +322,7 @@ const Model = (() => {
 		deleteTodo,
 		deleteStep,
 		editStep,
+		editChecked,
 		editNote,
 		deleteProject,
 		persistTodos,
@@ -326,7 +340,13 @@ const controlNewTodos = function () {
 	View.renderMainArea(newTodo);
 	View.addHandlerChecklistUpdate(controlChecklistUpdates, newTodo);
 	Model.state.todosArr.push(newTodo);
+	View.addHandlerDeleteTodo(controlDeleteTodo, newTodo);
+	View.addHandlerChecked(controlChecked, newTodo);
 	Model.persistTodos();
+};
+
+const controlDeleteTodo = function (id) {
+	Model.deleteTodo(id);
 };
 
 // updates display of checklist with new steps and updates checklist array of todo passed as argument
@@ -371,7 +391,7 @@ const controlEditSteps = function (todo, target) {
 	});
 };
 
-const controlCheckBoxes = function (todo, stepText) {
+const controlChecked = function (todo, stepText) {
 	Model.editChecked(todo, stepText);
 };
 
@@ -390,6 +410,8 @@ const init = () => {
 		View.renderCheckList(todo);
 		View.addHandlerChecklistUpdate(controlChecklistUpdates, todo);
 		View.addHandlerEditSteps(controlEditSteps, todo);
+		View.addHandlerChecked(controlChecked, todo);
+		View.addHandlerDeleteTodo(controlDeleteTodo, todo);
 	});
 	View.addHandlerNewTodo(controlNewTodos);
 	View.addHandlerNewProject(controlNewProjects);
@@ -404,7 +426,7 @@ init();
 // 2) I need to add ability to delete steps. ✅
 // 3) I need to find a way to keep checked steps checked.
 
-// I need to add event listeners to delete buttons on todos and projects.
+// I need to add event listeners to delete buttons on todos ✅ and projects.
 
 // Add ability to populate aside projects from projectsArr.
 // Add drag and drop for todos to projects in aside and/or select projects
@@ -417,12 +439,3 @@ init();
 
 // Over all:
 // 1) create buttons to hide/reveal forms for todos and projects.
-
-const testArr = [
-	{ step: "bla bla", checked: true },
-	{ step: "eat shit", checked: false },
-];
-// testArr.forEach((obj) => {
-const index = testArr.findIndex((obj) => obj.step === "bla bla");
-console.log(index);
-// });

@@ -12,7 +12,7 @@ body {
 	min-height: 100%;
 	display: grid;
 	grid-template-columns: 1fr 5fr;
-	grid-template-rows: 1fr 4fr;
+	grid-template-rows: 125px 4fr;
 }
 
 header {
@@ -22,7 +22,8 @@ header {
 	align-items: center;
 	color: white;
 	background-color: #1971c2;
-	height: max(125px, 20vh);
+	/* height: max(125px, 20vh); */
+	height: auto;
 }
 
 aside {
