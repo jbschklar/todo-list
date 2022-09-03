@@ -131,7 +131,7 @@ const View = (() => {
 			const listItem = document.createElement("li");
 			listItem.innerHTML = `<input type="checkbox" name="steps" id="steps" ${
 				obj.checked ? "checked" : ""
-			}/> ${obj.step}`;
+			}/>${obj.step}`;
 			stepList.appendChild(listItem);
 		});
 	};
@@ -171,8 +171,9 @@ const View = (() => {
 			if (checkBox.type === "checkbox") {
 				checkBox.addEventListener("change", (e) => {
 					const target = e.target.closest("li");
-					console.log(target, e.target.checked);
-					handler(todo, stepText);
+					const stepText = target.textContent;
+					const boolean = e.target.checked;
+					handler(todo, stepText, boolean);
 				});
 			}
 		});
@@ -227,6 +228,7 @@ const View = (() => {
 		addHandlerNewProject,
 		addHandlerChecklistUpdate,
 		addHandlerEditSteps,
+		addHandlerChecked,
 		addHandlerDeleteTodo,
 	};
 })();
@@ -391,8 +393,8 @@ const controlEditSteps = function (todo, target) {
 	});
 };
 
-const controlChecked = function (todo, stepText) {
-	Model.editChecked(todo, stepText);
+const controlChecked = function (todo, stepText, boolean) {
+	Model.editChecked(todo, stepText, boolean);
 };
 
 const controlNewProjects = function () {
@@ -424,9 +426,9 @@ init();
 // checklist additions:
 // 1) I need to limit new step inputs to one at a times. ✅
 // 2) I need to add ability to delete steps. ✅
-// 3) I need to find a way to keep checked steps checked.
+// 3) I need to find a way to keep checked steps checked ✅.
 
-// I need to add event listeners to delete buttons on todos ✅ and projects.
+// I need to add event listeners to delete buttons on todos ✅ and projects ( do this once you can populate the aside projects list so that the results are visible).
 
 // Add ability to populate aside projects from projectsArr.
 // Add drag and drop for todos to projects in aside and/or select projects
