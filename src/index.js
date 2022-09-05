@@ -109,14 +109,14 @@ const View = (() => {
             </svg>
         </button>
     </div>
-    <div class="todo-notes" ${obj.id}>
+    <div class="todo-notes">
         <textarea
             name="notes"
-            class="notes"
+            id="notes-${obj.id}"
             cols="70"
             rows="10"
             placeholder="Notes"
-        ></textarea>
+        >${obj.notes ? obj.notes : ""}</textarea>
     </div>
     </div>
     `;
@@ -179,6 +179,14 @@ const View = (() => {
 		});
 	};
 
+	const addHandlerNotes = function (handler, todo) {
+		const targetNote = document.getElementById(`notes-${todo.id}`);
+		targetNote.addEventListener("change", (e) => {
+			const noteText = targetNote.value;
+			handler(todo, noteText);
+		});
+	};
+
 	//creates tempObj from todo form to send to controller fn
 	const todoFormInputs = () => {
 		const title = document.getElementById("title").value;
@@ -213,7 +221,6 @@ const View = (() => {
 		const deleteTodoBtn = document.querySelector(`#${todo.id}`);
 		deleteTodoBtn.addEventListener("click", (e) => {
 			const targetTodo = e.target.closest(".todo");
-			console.log(targetTodo);
 			handler(e.target.id);
 			targetTodo.remove();
 		});
@@ -230,6 +237,7 @@ const View = (() => {
 		addHandlerEditSteps,
 		addHandlerChecked,
 		addHandlerDeleteTodo,
+		addHandlerNotes,
 	};
 })();
 
@@ -344,6 +352,7 @@ const controlNewTodos = function () {
 	Model.state.todosArr.push(newTodo);
 	View.addHandlerDeleteTodo(controlDeleteTodo, newTodo);
 	View.addHandlerChecked(controlChecked, newTodo);
+	View.addHandlerNotes(controlNotes, newTodo);
 	Model.persistTodos();
 };
 
@@ -361,11 +370,9 @@ const controlChecklistUpdates = function (todo, target, targetList) {
 	list.appendChild(newListItem);
 	// changes input to submitted step on 'enter'
 	newStep.addEventListener("change", (e) => {
-		console.log(e.target.value);
 		newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
 		// add newListItem to original todoObj
 		todo.checkList.push(Model.createStep(e.target.value));
-		console.log(todo);
 		Model.persistTodos();
 		targetList.classList.remove("lock");
 	});
@@ -382,9 +389,7 @@ const controlEditSteps = function (todo, target) {
 	editField.addEventListener("keypress", (e) => {
 		if (e.key !== "Enter") return;
 		if (editField.value === "") {
-			console.log("works");
 			Model.deleteStep(todo, stepText);
-			console.log(target.closest("li"));
 			target.closest("li").remove();
 			return;
 		}
@@ -395,6 +400,10 @@ const controlEditSteps = function (todo, target) {
 
 const controlChecked = function (todo, stepText, boolean) {
 	Model.editChecked(todo, stepText, boolean);
+};
+
+const controlNotes = function (todo, text) {
+	Model.editNote(todo, text);
 };
 
 const controlNewProjects = function () {
@@ -414,6 +423,7 @@ const init = () => {
 		View.addHandlerEditSteps(controlEditSteps, todo);
 		View.addHandlerChecked(controlChecked, todo);
 		View.addHandlerDeleteTodo(controlDeleteTodo, todo);
+		View.addHandlerNotes(controlNotes, todo);
 	});
 	View.addHandlerNewTodo(controlNewTodos);
 	View.addHandlerNewProject(controlNewProjects);
