@@ -445,9 +445,9 @@ init();
 //      from dropdown list populated by existing projects in array.
 
 // notes additions:
-// 1) Keep notes as stored strings on todo objects.
-// 2) link them to todo via ID
-// 3) event listener on change to update object and local storage
+// 1) Keep notes as stored strings on todo objects. ✅
+// 2) link them to todo via ID ✅
+// 3) event listener on change to update object and local storage ✅
 
 // Over all:
 // 1) create buttons to hide/reveal forms for todos and projects.
