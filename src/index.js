@@ -31,7 +31,7 @@ const View = (() => {
 		}
 		// for aside category dropdowns
 		if (!e.target.closest("aside")) return;
-		const target = e.target.closest(".collapsible");
+		const target = e.target.closest(".collapsible-aside");
 		const list = target.nextElementSibling;
 		const icons = target.querySelectorAll(".dropdown-icon");
 		list.classList.toggle("active");
@@ -70,6 +70,11 @@ const View = (() => {
                     d="m19 3.022c0-.008 0-.014 0-.022v-2a1 1 0 0 0 -2 0v1.1a5 5 0 0 0 -1-.1h-1v-1a1 1 0 0 0 -2 0v1h-2v-1a1 1 0 0 0 -2 0v1h-1a5 5 0 0 0 -1 .1v-1.1a1 1 0 0 0 -2 0v2 .022a4.979 4.979 0 0 0 -2 3.978v12a5.006 5.006 0 0 0 5 5h8a5.006 5.006 0 0 0 5-5v-12a4.979 4.979 0 0 0 -2-3.978zm0 15.978a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3-3v-12a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3zm-2-11a1 1 0 0 1 -1 1h-8a1 1 0 0 1 0-2h8a1 1 0 0 1 1 1zm0 4a1 1 0 0 1 -1 1h-8a1 1 0 0 1 0-2h8a1 1 0 0 1 1 1zm-4 4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1z"
                 />
             </svg>
+			<svg 
+				xmlns="http://www.w3.org/2000/svg" 
+				id="Outline" viewBox="0 0 24 24" 
+				class="project-folder todo-icon">
+				<path d="M19,3H12.472a1.019,1.019,0,0,1-.447-.1L8.869,1.316A3.014,3.014,0,0,0,7.528,1H5A5.006,5.006,0,0,0,0,6V18a5.006,5.006,0,0,0,5,5H19a5.006,5.006,0,0,0,5-5V8A5.006,5.006,0,0,0,19,3ZM5,3H7.528a1.019,1.019,0,0,1,.447.1l3.156,1.579A3.014,3.014,0,0,0,12.472,5H19a3,3,0,0,1,2.779,1.882L2,6.994V6A3,3,0,0,1,5,3ZM19,21H5a3,3,0,0,1-3-3V8.994l20-.113V18A3,3,0,0,1,19,21Z"/></svg>
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -189,14 +194,22 @@ const View = (() => {
 
 	//creates tempObj from todo form to send to controller fn
 	const todoFormInputs = () => {
-		const title = document.getElementById("title").value;
-		const dueDate = document.getElementById("due-date").value;
+		const titleField = document.getElementById("title");
+		const title = titleField.value;
+		const dueDateField = document.getElementById("due-date");
+		const dueDate = dueDateField.value;
+		// to clear input fields
+		titleField.value = "";
+		dueDateField.value = "";
 		return { title, dueDate };
 	};
 
 	// creates obj with title from project form to send to controller
 	const projectFormInput = () => {
-		const title = document.getElementById("project-title").value;
+		const titleField = document.getElementById("project-title");
+		const title = titleField.value;
+		// to clear input field
+		titleField.value = "";
 		return { title };
 	};
 
@@ -241,6 +254,40 @@ const View = (() => {
 	};
 })();
 
+const asideView = (() => {
+	const aside = document.querySelector("aside");
+	const projects = document.querySelector(".projects-list");
+
+	const renderProject = function (project) {
+		const title = document.createElement("li");
+		title.innerHTML = `${project.title}<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		class="todo-icon delete-project"
+		id="${project.id}"
+	>
+		<g id="_01_align_center" data-name="01 align center">
+			<polygon
+				points="18.707 6.707 17.293 5.293 12 10.586 6.707 5.293 5.293 6.707 10.586 12 5.293 17.293 6.707 18.707 12 13.414 17.293 18.707 18.707 17.293 13.414 12 18.707 6.707"
+			/>
+		</g>
+	</svg>`;
+		projects.appendChild(title);
+	};
+
+	const addHandlerDeleteProject = function (handler, project) {
+		const deleteProjectBtn = document.getElementById(`${project.id}`);
+		console.log(deleteProjectBtn);
+		deleteProjectBtn.addEventListener("click", (e) => {
+			const projectEl = e.target.closest("li");
+			handler(project.id);
+			projectEl.remove();
+		});
+	};
+
+	return { renderProject, addHandlerDeleteProject };
+})();
+
 // Model code //////////////////////////////////////////////////////
 const Model = (() => {
 	const state = {
@@ -254,7 +301,7 @@ const Model = (() => {
 			dueDate: obj.dueDate,
 			checkList: [],
 			notes: "",
-			id: obj.title.replaceAll(" ", ""),
+			id: "todo" + new Date().getTime().toString().slice(-6),
 		};
 	};
 
@@ -266,6 +313,7 @@ const Model = (() => {
 		return {
 			title: obj.title,
 			todos: [],
+			id: "project" + new Date().getTime().toString().slice(-6),
 		};
 	};
 
@@ -306,9 +354,9 @@ const Model = (() => {
 		persistTodos();
 	};
 
-	const deleteProject = function (title) {
+	const deleteProject = function (projectId) {
 		const index = state.projectsArr.findIndex(
-			(project) => project.title === title
+			(project) => project.id === projectId
 		);
 		state.projectsArr.splice(index, 1);
 		persistProjects();
@@ -412,6 +460,12 @@ const Controller = (() => {
 		Model.state.projectsArr.push(newProject);
 		Model.persistProjects();
 		console.log(Model.state.projectsArr);
+		asideView.renderProject(newProject);
+		asideView.addHandlerDeleteProject(controlDeleteProject, newProject);
+	};
+
+	const controlDeleteProject = function (id) {
+		Model.deleteProject(id);
 	};
 
 	const init = () => {
@@ -427,6 +481,11 @@ const Controller = (() => {
 		});
 		View.addHandlerNewTodo(controlNewTodos);
 		View.addHandlerNewProject(controlNewProjects);
+		if (Model.state.projectsArr)
+			Model.state.projectsArr.forEach((project) => {
+				asideView.renderProject(project);
+				asideView.addHandlerDeleteProject(controlDeleteProject, project);
+			});
 	};
 
 	init();
@@ -438,17 +497,21 @@ const Controller = (() => {
 // 2) I need to add ability to delete steps. ✅
 // 3) I need to find a way to keep checked steps checked ✅.
 
-// I need to add event listeners to delete buttons on todos ✅ and projects ( do this once you can populate the aside projects list so that the results are visible).
+// I need to add event listeners to delete buttons on todos ✅ and projects ✅.
 
-// Add ability to populate aside projects from projectsArr.
-// Add drag and drop for todos to projects in aside and/or select projects
-//      from dropdown list populated by existing projects in array.
-
-// notes additions:
+// Notes additions:
 // 1) Keep notes as stored strings on todo objects. ✅
 // 2) link them to todo via ID ✅
 // 3) event listener on change to update object and local storage ✅
 
+// Aside tasks:
+// 1) Add ability to populate aside projects from projectsArr. ✅
+// 2) Add drag and drop for todos to projects in aside and/or select projects
+//   from dropdown list populated by existing projects in array. ***** created icon, now to make dropdown selection to display and populate ⬅️
+// 3) Organize todos by date.
+// 4) Populate main display with selected todo/project from aside on select
+
 // Over all:
-// 1) create buttons to hide/reveal forms for todos and projects.
-// 2) Make form fields capitalize first letter
+// 1) Create buttons to hide/reveal forms for todos and projects.
+// 2) Make form fields capitalize first letter.
+// 3) Create warning modal to verify before deleteing todo's or projects

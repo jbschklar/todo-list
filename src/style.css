@@ -55,10 +55,11 @@ aside ul {
 	justify-content: space-between;
 }
 
-/* button {
-	height: 5px;
-	width: 10px;
-} */
+.collapsible-aside {
+	display: flex;
+	gap: 15px;
+	align-items: center;
+}
 
 .todo-icons {
 	display: flex;
@@ -150,4 +151,16 @@ form {
 
 form button {
 	border: none;
+}
+
+.delete-project {
+	height: 15px;
+	width: auto;
+}
+
+aside li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
 }
