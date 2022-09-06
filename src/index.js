@@ -341,96 +341,96 @@ const Model = (() => {
 })();
 
 // Controller //////////////////////////////////////////////////////
+const Controller = (() => {
+	// fn to create todos from form and add to todosArr
+	const controlNewTodos = function () {
+		const newTodo = Model.createTodo(View.todoFormInputs());
 
-// fn to create todos from form and add to todosArr
-const controlNewTodos = function () {
-	const newTodo = Model.createTodo(View.todoFormInputs());
-
-	console.log(Model.state.todosArr);
-	View.renderMainArea(newTodo);
-	View.addHandlerChecklistUpdate(controlChecklistUpdates, newTodo);
-	Model.state.todosArr.push(newTodo);
-	View.addHandlerDeleteTodo(controlDeleteTodo, newTodo);
-	View.addHandlerChecked(controlChecked, newTodo);
-	View.addHandlerNotes(controlNotes, newTodo);
-	Model.persistTodos();
-};
-
-const controlDeleteTodo = function (id) {
-	Model.deleteTodo(id);
-};
-
-// updates display of checklist with new steps and updates checklist array of todo passed as argument
-const controlChecklistUpdates = function (todo, target, targetList) {
-	targetList.classList.add("lock");
-	const list = target.closest(".drop-list").firstElementChild;
-	const newListItem = document.createElement("li");
-	const newStep = document.createElement("input");
-	newListItem.appendChild(newStep);
-	list.appendChild(newListItem);
-	// changes input to submitted step on 'enter'
-	newStep.addEventListener("change", (e) => {
-		newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
-		// add newListItem to original todoObj
-		todo.checkList.push(Model.createStep(e.target.value));
+		console.log(Model.state.todosArr);
+		View.renderMainArea(newTodo);
+		View.addHandlerChecklistUpdate(controlChecklistUpdates, newTodo);
+		Model.state.todosArr.push(newTodo);
+		View.addHandlerDeleteTodo(controlDeleteTodo, newTodo);
+		View.addHandlerChecked(controlChecked, newTodo);
+		View.addHandlerNotes(controlNotes, newTodo);
 		Model.persistTodos();
-		targetList.classList.remove("lock");
-	});
-	// Adds this event listener to list items once they are created since they don't exist
-	//when this is initially called during init
-	View.addHandlerEditSteps(controlEditSteps, todo);
-};
+	};
 
-const controlEditSteps = function (todo, target) {
-	const stepText = target.textContent;
-	target.innerHTML = `<input type="checkbox" name="steps" id="steps" /><input type="text" name="step-edit" id="step-edit">`;
-	const editField = document.getElementById("step-edit");
-	editField.value = `${stepText}`;
-	editField.addEventListener("keypress", (e) => {
-		if (e.key !== "Enter") return;
-		if (editField.value === "") {
-			Model.deleteStep(todo, stepText);
-			target.closest("li").remove();
-			return;
-		}
-		target.innerHTML = `<input type="checkbox" name="steps" id="steps" />${editField.value}`;
-		Model.editStep(todo, stepText, editField.value);
-	});
-};
+	const controlDeleteTodo = function (id) {
+		Model.deleteTodo(id);
+	};
 
-const controlChecked = function (todo, stepText, boolean) {
-	Model.editChecked(todo, stepText, boolean);
-};
-
-const controlNotes = function (todo, text) {
-	Model.editNote(todo, text);
-};
-
-const controlNewProjects = function () {
-	console.log("new project");
-	const newProject = Model.createProject(View.projectFormInput());
-	Model.state.projectsArr.push(newProject);
-	Model.persistProjects();
-	console.log(Model.state.projectsArr);
-};
-
-const init = () => {
-	console.log(Model.state.todosArr);
-	Model.state.todosArr.forEach((todo) => {
-		View.renderMainArea(todo);
-		View.renderCheckList(todo);
-		View.addHandlerChecklistUpdate(controlChecklistUpdates, todo);
+	// updates display of checklist with new steps and updates checklist array of todo passed as argument
+	const controlChecklistUpdates = function (todo, target, targetList) {
+		targetList.classList.add("lock");
+		const list = target.closest(".drop-list").firstElementChild;
+		const newListItem = document.createElement("li");
+		const newStep = document.createElement("input");
+		newListItem.appendChild(newStep);
+		list.appendChild(newListItem);
+		// changes input to submitted step on 'enter'
+		newStep.addEventListener("change", (e) => {
+			newListItem.innerHTML = `<input type="checkbox" name="steps" id="steps" />${e.target.value}`;
+			// add newListItem to original todoObj
+			todo.checkList.push(Model.createStep(e.target.value));
+			Model.persistTodos();
+			targetList.classList.remove("lock");
+		});
+		// Adds this event listener to list items once they are created since they don't exist
+		//when this is initially called during init
 		View.addHandlerEditSteps(controlEditSteps, todo);
-		View.addHandlerChecked(controlChecked, todo);
-		View.addHandlerDeleteTodo(controlDeleteTodo, todo);
-		View.addHandlerNotes(controlNotes, todo);
-	});
-	View.addHandlerNewTodo(controlNewTodos);
-	View.addHandlerNewProject(controlNewProjects);
-};
+	};
 
-init();
+	const controlEditSteps = function (todo, target) {
+		const stepText = target.textContent;
+		target.innerHTML = `<input type="checkbox" name="steps" id="steps" /><input type="text" name="step-edit" id="step-edit">`;
+		const editField = document.getElementById("step-edit");
+		editField.value = `${stepText}`;
+		editField.addEventListener("keypress", (e) => {
+			if (e.key !== "Enter") return;
+			if (editField.value === "") {
+				Model.deleteStep(todo, stepText);
+				target.closest("li").remove();
+				return;
+			}
+			target.innerHTML = `<input type="checkbox" name="steps" id="steps" />${editField.value}`;
+			Model.editStep(todo, stepText, editField.value);
+		});
+	};
 
+	const controlChecked = function (todo, stepText, boolean) {
+		Model.editChecked(todo, stepText, boolean);
+	};
+
+	const controlNotes = function (todo, text) {
+		Model.editNote(todo, text);
+	};
+
+	const controlNewProjects = function () {
+		console.log("new project");
+		const newProject = Model.createProject(View.projectFormInput());
+		Model.state.projectsArr.push(newProject);
+		Model.persistProjects();
+		console.log(Model.state.projectsArr);
+	};
+
+	const init = () => {
+		console.log(Model.state.todosArr);
+		Model.state.todosArr.forEach((todo) => {
+			View.renderMainArea(todo);
+			View.renderCheckList(todo);
+			View.addHandlerChecklistUpdate(controlChecklistUpdates, todo);
+			View.addHandlerEditSteps(controlEditSteps, todo);
+			View.addHandlerChecked(controlChecked, todo);
+			View.addHandlerDeleteTodo(controlDeleteTodo, todo);
+			View.addHandlerNotes(controlNotes, todo);
+		});
+		View.addHandlerNewTodo(controlNewTodos);
+		View.addHandlerNewProject(controlNewProjects);
+	};
+
+	init();
+})();
 // Notes //
 
 // checklist additions:
@@ -451,3 +451,4 @@ init();
 
 // Over all:
 // 1) create buttons to hide/reveal forms for todos and projects.
+// 2) Make form fields capitalize first letter
