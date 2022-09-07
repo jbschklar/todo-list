@@ -65,7 +65,8 @@ aside ul {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	width: 100px;
+	/* width: 100px; */
+	gap: 20px;
 }
 
 .todo-icon {
@@ -163,4 +164,16 @@ aside li {
 	align-items: center;
 	justify-content: space-between;
 	gap: 20px;
+}
+
+.folder-list-container {
+	display: flex;
+	/* flex-direction: column; */
+	align-items: center;
+	justify-content: center;
+	gap: 15px;
+}
+
+.hidden {
+	display: none;
 }

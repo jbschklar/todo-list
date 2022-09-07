@@ -58,6 +58,19 @@ const View = (() => {
         <h2>${obj.title}</h2>
         <p class="due-date">${obj.dueDate}</p>
         <div class="todo-icons">
+		<div class="folder-list-container">
+		<select class="projects-selector hidden" id="project-list-${obj.id}">
+			<option>None</option>
+		</select>
+			<svg 
+				xmlns="http://www.w3.org/2000/svg" 
+				viewBox="0 0 24 24" 
+				id="project-folder-${obj.id}"
+				class="todo-icon">
+				<path d="M19,3H12.472a1.019,1.019,0,0,1-.447-.1L8.869,1.316A3.014,3.014,0,0,0,7.528,1H5A5.006,5.006,0,0,0,0,6V18a5.006,5.006,0,0,0,5,5H19a5.006,5.006,0,0,0,5-5V8A5.006,5.006,0,0,0,19,3ZM5,3H7.528a1.019,1.019,0,0,1,.447.1l3.156,1.579A3.014,3.014,0,0,0,12.472,5H19a3,3,0,0,1,2.779,1.882L2,6.994V6A3,3,0,0,1,5,3ZM19,21H5a3,3,0,0,1-3-3V8.994l20-.113V18A3,3,0,0,1,19,21Z"/>
+			</svg>
+			
+			</div>
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 id="Layer_1"
@@ -70,12 +83,8 @@ const View = (() => {
                     d="m19 3.022c0-.008 0-.014 0-.022v-2a1 1 0 0 0 -2 0v1.1a5 5 0 0 0 -1-.1h-1v-1a1 1 0 0 0 -2 0v1h-2v-1a1 1 0 0 0 -2 0v1h-1a5 5 0 0 0 -1 .1v-1.1a1 1 0 0 0 -2 0v2 .022a4.979 4.979 0 0 0 -2 3.978v12a5.006 5.006 0 0 0 5 5h8a5.006 5.006 0 0 0 5-5v-12a4.979 4.979 0 0 0 -2-3.978zm0 15.978a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3-3v-12a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3zm-2-11a1 1 0 0 1 -1 1h-8a1 1 0 0 1 0-2h8a1 1 0 0 1 1 1zm0 4a1 1 0 0 1 -1 1h-8a1 1 0 0 1 0-2h8a1 1 0 0 1 1 1zm-4 4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1z"
                 />
             </svg>
-			<svg 
-				xmlns="http://www.w3.org/2000/svg" 
-				id="Outline" viewBox="0 0 24 24" 
-				class="project-folder todo-icon">
-				<path d="M19,3H12.472a1.019,1.019,0,0,1-.447-.1L8.869,1.316A3.014,3.014,0,0,0,7.528,1H5A5.006,5.006,0,0,0,0,6V18a5.006,5.006,0,0,0,5,5H19a5.006,5.006,0,0,0,5-5V8A5.006,5.006,0,0,0,19,3ZM5,3H7.528a1.019,1.019,0,0,1,.447.1l3.156,1.579A3.014,3.014,0,0,0,12.472,5H19a3,3,0,0,1,2.779,1.882L2,6.994V6A3,3,0,0,1,5,3ZM19,21H5a3,3,0,0,1-3-3V8.994l20-.113V18A3,3,0,0,1,19,21Z"/></svg>
-            <svg
+			
+				<svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 class="todo-icon delete-todo"
@@ -192,6 +201,27 @@ const View = (() => {
 		});
 	};
 
+	const revealProjects = function (todo) {
+		const targetFolderIcon = document.getElementById(
+			`project-folder-${todo.id}`
+		);
+		const targetFolderList = document.getElementById(`project-list-${todo.id}`);
+		targetFolderIcon.addEventListener("click", (e) => {
+			targetFolderList.classList.toggle("hidden");
+		});
+	};
+
+	const populateProjFolder = function (todo, projectsArr) {
+		const targetFolderList = document.getElementById(`project-list-${todo.id}`);
+		console.log(targetFolderList);
+		projectsArr.forEach((project) => {
+			const option = document.createElement("option");
+			option.textContent = project.title;
+			targetFolderList.appendChild(option);
+		});
+	};
+
+	const addHandlerProjectAssign = function (handler, todo) {};
 	//creates tempObj from todo form to send to controller fn
 	const todoFormInputs = () => {
 		const titleField = document.getElementById("title");
@@ -246,6 +276,8 @@ const View = (() => {
 		projectFormInput,
 		addHandlerNewTodo,
 		addHandlerNewProject,
+		revealProjects,
+		populateProjFolder,
 		addHandlerChecklistUpdate,
 		addHandlerEditSteps,
 		addHandlerChecked,
@@ -277,7 +309,6 @@ const asideView = (() => {
 
 	const addHandlerDeleteProject = function (handler, project) {
 		const deleteProjectBtn = document.getElementById(`${project.id}`);
-		console.log(deleteProjectBtn);
 		deleteProjectBtn.addEventListener("click", (e) => {
 			const projectEl = e.target.closest("li");
 			handler(project.id);
@@ -401,6 +432,8 @@ const Controller = (() => {
 		View.addHandlerDeleteTodo(controlDeleteTodo, newTodo);
 		View.addHandlerChecked(controlChecked, newTodo);
 		View.addHandlerNotes(controlNotes, newTodo);
+		View.revealProjects(newTodo);
+		View.populateProjFolder(newTodo, Model.state.projectsArr);
 		Model.persistTodos();
 	};
 
@@ -478,6 +511,8 @@ const Controller = (() => {
 			View.addHandlerChecked(controlChecked, todo);
 			View.addHandlerDeleteTodo(controlDeleteTodo, todo);
 			View.addHandlerNotes(controlNotes, todo);
+			View.revealProjects(todo);
+			View.populateProjFolder(todo, Model.state.projectsArr);
 		});
 		View.addHandlerNewTodo(controlNewTodos);
 		View.addHandlerNewProject(controlNewProjects);
