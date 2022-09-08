@@ -367,15 +367,39 @@ const Model = (() => {
 		return value;
 	};
 
+	const findCurrentProject = function (todo) {
+		let currentProject;
+		state.projectsArr.forEach((p) => {
+			if (p.todos.some((obj) => obj.id === todo.id)) {
+				console.log(p);
+				currentProject = p;
+				return;
+			}
+		});
+		return currentProject;
+	};
+
 	const addProjectTodo = function (projectTitle, todo) {
-		const duplicate = preventDuplicateAssign(todo);
+		removeProjectTodo(todo);
 		const index = state.projectsArr.findIndex(
 			(project) => project.title === projectTitle
 		);
-		console.log(duplicate);
 		// state.projectsArr[index].todos = [todo];
-		if (duplicate) return;
 		state.projectsArr[index].todos.push(todo);
+		persistProjects();
+		console.log(state.projectsArr);
+	};
+
+	const removeProjectTodo = function (todo) {
+		const currentProject = findCurrentProject(todo);
+		if (!currentProject) return;
+		const projectIndex = state.projectsArr.findIndex(
+			(project) => project.id === currentProject.id
+		);
+		const todoIndex = state.projectsArr[projectIndex].todos.findIndex(
+			(t) => t.id === todo.id
+		);
+		state.projectsArr[projectIndex].todos.splice(todoIndex, 1);
 		persistProjects();
 		console.log(state.projectsArr);
 	};
@@ -449,6 +473,7 @@ const Model = (() => {
 		persistTodos,
 		persistProjects,
 		addProjectTodo,
+		removeProjectTodo,
 	};
 })();
 
@@ -532,6 +557,10 @@ const Controller = (() => {
 	};
 
 	const controlProjectAssign = function (projectTitle, todo) {
+		if (projectTitle === "None") {
+			Model.removeProjectTodo(todo);
+			return;
+		}
 		Model.addProjectTodo(projectTitle, todo);
 	};
 
@@ -581,6 +610,7 @@ const Controller = (() => {
 // 1) Add ability to populate aside projects from projectsArr. ✅
 // 2) Add drag and drop for todos to projects in aside and/or select projects
 //   from dropdown list populated by existing projects in array.✅
+// 2.b) add escape function for selection of none from projects folder options ⬅️
 // 3) Organize todos by date.
 // 4) Populate main display with selected todo/project from aside on select
 // 5) Add ability to delete todo from projectsArr
