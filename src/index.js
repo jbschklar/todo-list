@@ -201,21 +201,26 @@ const View = (() => {
 		});
 	};
 
-	const revealProjects = function (todo) {
+	const revealProjects = function (todo, handler) {
 		const targetFolderIcon = document.getElementById(
 			`project-folder-${todo.id}`
 		);
 		const targetFolderList = document.getElementById(`project-list-${todo.id}`);
 		targetFolderIcon.addEventListener("click", (e) => {
 			targetFolderList.classList.toggle("hidden");
+			// to pass a handler with populateProjFolder fn add projects as they are created w/o reloading page
+			handler(todo);
 		});
 	};
 
-	const populateProjFolder = function (todo, projectsArr) {
+	const populateProjFolder = function (todo, projectsArr, selectedProject) {
 		const targetFolderList = document.getElementById(`project-list-${todo.id}`);
+		targetFolderList.innerHTML = "";
 		projectsArr.forEach((project) => {
 			const option = document.createElement("option");
 			option.textContent = project.title;
+			if (selectedProject && project.title === selectedProject.title)
+				option.setAttribute("selected", "");
 			targetFolderList.appendChild(option);
 		});
 	};
@@ -224,7 +229,6 @@ const View = (() => {
 		const targetFolderList = document.getElementById(`project-list-${todo.id}`);
 		targetFolderList.addEventListener("change", (e) => {
 			const selectedProject = targetFolderList.value;
-			console.log(selectedProject);
 			handler(selectedProject, todo);
 		});
 	};
@@ -257,7 +261,7 @@ const View = (() => {
 		});
 	};
 
-	// adds event handler for the add roject button on form
+	// adds event handler for the add project button on form
 	const addHandlerNewProject = function (handler) {
 		createProjectBtn.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -272,6 +276,14 @@ const View = (() => {
 			const targetTodo = e.target.closest(".todo");
 			handler(e.target.id);
 			targetTodo.remove();
+		});
+	};
+
+	const addHandlerSort = function (handler) {
+		const sortBtn = document.querySelector(".sort-btn");
+		sortBtn.addEventListener("click", (e) => {
+			mainContainer.innerHTML = "";
+			handler();
 		});
 	};
 
@@ -290,6 +302,7 @@ const View = (() => {
 		addHandlerChecked,
 		addHandlerDeleteTodo,
 		addHandlerNotes,
+		addHandlerSort,
 	};
 })();
 
@@ -299,7 +312,10 @@ const asideView = (() => {
 
 	const renderProject = function (project) {
 		const title = document.createElement("li");
-		title.innerHTML = `${project.title}<svg
+		title.innerHTML = `${project.title}${
+			project.title === "None"
+				? ""
+				: `<svg
 		xmlns="http://www.w3.org/2000/svg"
 		viewBox="0 0 24 24"
 		class="todo-icon delete-project"
@@ -310,12 +326,14 @@ const asideView = (() => {
 				points="18.707 6.707 17.293 5.293 12 10.586 6.707 5.293 5.293 6.707 10.586 12 5.293 17.293 6.707 18.707 12 13.414 17.293 18.707 18.707 17.293 13.414 12 18.707 6.707"
 			/>
 		</g>
-	</svg>`;
+	</svg>`
+		}`;
 		projects.appendChild(title);
 	};
 
 	const addHandlerDeleteProject = function (handler, project) {
 		const deleteProjectBtn = document.getElementById(`${project.id}`);
+		if (!deleteProjectBtn) return;
 		deleteProjectBtn.addEventListener("click", (e) => {
 			const projectEl = e.target.closest("li");
 			handler(project.id);
@@ -330,7 +348,7 @@ const asideView = (() => {
 const Model = (() => {
 	const state = {
 		todosArr: [],
-		projectsArr: [],
+		projectsArr: ["None"],
 	};
 
 	const createTodo = function (obj) {
@@ -355,23 +373,11 @@ const Model = (() => {
 		};
 	};
 
-	// to prevent todos being assigned to multiple projects
-	const preventDuplicateAssign = function (todo) {
-		let value = false;
-		state.projectsArr.forEach((p) => {
-			if (p.todos.some((obj) => obj.id === todo.id)) {
-				console.log("cancelled");
-				value = true;
-			}
-		});
-		return value;
-	};
-
+	// to find the todo's assigned project if already assigned
 	const findCurrentProject = function (todo) {
 		let currentProject;
 		state.projectsArr.forEach((p) => {
 			if (p.todos.some((obj) => obj.id === todo.id)) {
-				console.log(p);
 				currentProject = p;
 				return;
 			}
@@ -387,7 +393,7 @@ const Model = (() => {
 		// state.projectsArr[index].todos = [todo];
 		state.projectsArr[index].todos.push(todo);
 		persistProjects();
-		console.log(state.projectsArr);
+		// console.log(state.projectsArr);
 	};
 
 	const removeProjectTodo = function (todo) {
@@ -401,7 +407,6 @@ const Model = (() => {
 		);
 		state.projectsArr[projectIndex].todos.splice(todoIndex, 1);
 		persistProjects();
-		console.log(state.projectsArr);
 	};
 
 	const persistTodos = function () {
@@ -474,6 +479,7 @@ const Model = (() => {
 		persistProjects,
 		addProjectTodo,
 		removeProjectTodo,
+		findCurrentProject,
 	};
 })();
 
@@ -490,8 +496,7 @@ const Controller = (() => {
 		View.addHandlerDeleteTodo(controlDeleteTodo, newTodo);
 		View.addHandlerChecked(controlChecked, newTodo);
 		View.addHandlerNotes(controlNotes, newTodo);
-		View.revealProjects(newTodo);
-		View.populateProjFolder(newTodo, Model.state.projectsArr);
+		View.revealProjects(newTodo, controlTodoProjectList);
 		View.addHandlerProjectAssign(controlProjectAssign, newTodo);
 		Model.persistTodos();
 	};
@@ -546,12 +551,19 @@ const Controller = (() => {
 		Model.editNote(todo, text);
 	};
 
+	const controlTodoProjectList = function (
+		todo,
+		projectsArr = Model.state.projectsArr
+	) {
+		// fn to look for todo's assigned project and pass as argument to attatch selected attribute
+		const selectedProject = Model.findCurrentProject(todo);
+		View.populateProjFolder(todo, projectsArr, selectedProject);
+	};
+
 	const controlNewProjects = function () {
-		console.log("new project");
 		const newProject = Model.createProject(View.projectFormInput());
 		Model.state.projectsArr.push(newProject);
 		Model.persistProjects();
-		console.log(Model.state.projectsArr);
 		asideView.renderProject(newProject);
 		asideView.addHandlerDeleteProject(controlDeleteProject, newProject);
 	};
@@ -568,21 +580,35 @@ const Controller = (() => {
 		Model.deleteProject(id);
 	};
 
+	const controlMainOrder = function () {
+		Model.state.todosArr.sort((a, b) => {
+			a.dueDate - b.dueDate;
+		});
+		Model.state.todosArr.forEach((t) => {
+			todoFeatures(t);
+		});
+	};
+
+	const todoFeatures = function (todo) {
+		View.renderMainArea(todo);
+		View.renderCheckList(todo);
+		View.addHandlerChecklistUpdate(controlChecklistUpdates, todo);
+		View.addHandlerEditSteps(controlEditSteps, todo);
+		View.addHandlerChecked(controlChecked, todo);
+		View.addHandlerDeleteTodo(controlDeleteTodo, todo);
+		View.addHandlerNotes(controlNotes, todo);
+		View.revealProjects(todo, controlTodoProjectList);
+		View.addHandlerProjectAssign(controlProjectAssign, todo);
+	};
+
 	const init = () => {
 		Model.state.todosArr.forEach((todo) => {
-			View.renderMainArea(todo);
-			View.renderCheckList(todo);
-			View.addHandlerChecklistUpdate(controlChecklistUpdates, todo);
-			View.addHandlerEditSteps(controlEditSteps, todo);
-			View.addHandlerChecked(controlChecked, todo);
-			View.addHandlerDeleteTodo(controlDeleteTodo, todo);
-			View.addHandlerNotes(controlNotes, todo);
-			View.revealProjects(todo);
-			View.populateProjFolder(todo, Model.state.projectsArr);
-			View.addHandlerProjectAssign(controlProjectAssign, todo);
+			todoFeatures(todo);
 		});
+		View.addHandlerSort(controlMainOrder);
 		View.addHandlerNewTodo(controlNewTodos);
 		View.addHandlerNewProject(controlNewProjects);
+		// for the asise
 		if (Model.state.projectsArr)
 			Model.state.projectsArr.forEach((project) => {
 				asideView.renderProject(project);
@@ -608,9 +634,10 @@ const Controller = (() => {
 
 // Aside tasks:
 // 1) Add ability to populate aside projects from projectsArr. ✅
-// 2) Add drag and drop for todos to projects in aside and/or select projects
+// 2) Add drag and drop for todos to projects in aside ❎ and/or select projects
 //   from dropdown list populated by existing projects in array.✅
-// 2.b) add escape function for selection of none from projects folder options ⬅️
+// 2.b) add escape function for selection of none from projects folder options ✅
+// 2.c) add populateFolder fn to the click of folder icon and make current project the first in the list ✅
 // 3) Organize todos by date.
 // 4) Populate main display with selected todo/project from aside on select
 // 5) Add ability to delete todo from projectsArr
@@ -619,3 +646,4 @@ const Controller = (() => {
 // 1) Create buttons to hide/reveal forms for todos and projects.
 // 2) Make form fields capitalize first letter.
 // 3) Create warning modal to verify before deleteing todo's or projects
+// 4) refactor model code to add helper functions for findTodoIndex and findProjectIndex to keep DRY
