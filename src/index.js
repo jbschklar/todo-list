@@ -1,7 +1,7 @@
 "use strict";
 import _, { times, update } from "lodash";
 import "./style.css";
-import { compareAsc, compareDesc, lightFormat } from "date-fns";
+import { compareAsc, compareDesc, lightFormat, isToday } from "date-fns";
 
 // View code ////////////////////////////////////////////////////////////////////////
 const View = (() => {
@@ -312,6 +312,12 @@ const asideView = (() => {
 	const aside = document.querySelector("aside");
 	const projects = document.querySelector(".projects-list");
 
+	const renderToday = function (todayArr) {};
+
+	const renderNext3Days = function () {};
+
+	const renderThisWeek = function () {};
+
 	const renderProject = function (project) {
 		const title = document.createElement("li");
 		title.innerHTML = `${project.title}${
@@ -351,6 +357,13 @@ const Model = (() => {
 	const state = {
 		todosArr: [],
 		projectsArr: ["None"],
+	};
+
+	const createTodayArr = function () {
+		const todayArr = [];
+		state.todosArr.map((todo) => {
+			if (isToday(new Date(todo.dueDate))) todayArr.push(todo);
+		});
 	};
 
 	const createTodo = function (obj) {
@@ -582,20 +595,22 @@ const Controller = (() => {
 		Model.deleteProject(id);
 	};
 
-	const controlSortAsc = function () {
-		Model.state.todosArr.sort((a, b) =>
+	const controlSortAsc = function (name) {
+		const displayArr = Model.state.todosArr;
+		displayArr.sort((a, b) =>
 			compareAsc(new Date(a.dueDate), new Date(b.dueDate))
 		);
-		Model.state.todosArr.forEach((t) => {
+		displayArr.forEach((t) => {
 			todoFeatures(t);
 		});
 	};
 
-	const controlSortDsc = function () {
-		Model.state.todosArr.sort((a, b) =>
+	const controlSortDsc = function (nome) {
+		const displayArr = Model.state.todosArr;
+		displayArr.sort((a, b) =>
 			compareDesc(new Date(a.dueDate), new Date(b.dueDate))
 		);
-		Model.state.todosArr.forEach((t) => {
+		displayArr.forEach((t) => {
 			todoFeatures(t);
 		});
 	};
@@ -649,7 +664,8 @@ const Controller = (() => {
 //   from dropdown list populated by existing projects in array.✅
 // 2.b) add escape function for selection of none from projects folder options ✅
 // 2.c) add populateFolder fn to the click of folder icon and make current project the first in the list ✅
-// 3) Organize todos by date.
+// 3) Organize todos by date in main display. ✅
+// 3.b) organize each date range portion of aside. ⬅️
 // 4) Populate main display with selected todo/project from aside on select
 // 5) Add ability to delete todo from projectsArr
 
