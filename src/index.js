@@ -1,6 +1,7 @@
 "use strict";
 import _, { times, update } from "lodash";
 import "./style.css";
+import { compareAsc, compareDesc, lightFormat } from "date-fns";
 
 // View code ////////////////////////////////////////////////////////////////////////
 const View = (() => {
@@ -56,7 +57,7 @@ const View = (() => {
             />
         </svg>
         <h2>${obj.title}</h2>
-        <p class="due-date">${obj.dueDate}</p>
+        <p class="due-date">${lightFormat(obj.dueDate, "MM/dd/yyyy")}</p>
         <div class="todo-icons">
 		<div class="folder-list-container">
 		<select class="projects-selector hidden" id="project-list-${obj.id}">
@@ -237,7 +238,7 @@ const View = (() => {
 		const titleField = document.getElementById("title");
 		const title = titleField.value;
 		const dueDateField = document.getElementById("due-date");
-		const dueDate = dueDateField.value;
+		const dueDate = Date.parse(dueDateField.value.replaceAll("-", "/"));
 		// to clear input fields
 		titleField.value = "";
 		dueDateField.value = "";
@@ -279,11 +280,12 @@ const View = (() => {
 		});
 	};
 
-	const addHandlerSort = function (handler) {
+	const addHandlerSort = function (handlerAsc, handlerDsc) {
 		const sortBtn = document.querySelector(".sort-btn");
 		sortBtn.addEventListener("click", (e) => {
+			sortBtn.classList.toggle("ascend");
 			mainContainer.innerHTML = "";
-			handler();
+			sortBtn.classList.contains("ascend") ? handlerAsc() : handlerDsc();
 		});
 	};
 
@@ -580,10 +582,19 @@ const Controller = (() => {
 		Model.deleteProject(id);
 	};
 
-	const controlMainOrder = function () {
-		Model.state.todosArr.sort((a, b) => {
-			a.dueDate - b.dueDate;
+	const controlSortAsc = function () {
+		Model.state.todosArr.sort((a, b) =>
+			compareAsc(new Date(a.dueDate), new Date(b.dueDate))
+		);
+		Model.state.todosArr.forEach((t) => {
+			todoFeatures(t);
 		});
+	};
+
+	const controlSortDsc = function () {
+		Model.state.todosArr.sort((a, b) =>
+			compareDesc(new Date(a.dueDate), new Date(b.dueDate))
+		);
 		Model.state.todosArr.forEach((t) => {
 			todoFeatures(t);
 		});
@@ -605,7 +616,7 @@ const Controller = (() => {
 		Model.state.todosArr.forEach((todo) => {
 			todoFeatures(todo);
 		});
-		View.addHandlerSort(controlMainOrder);
+		View.addHandlerSort(controlSortAsc, controlSortDsc);
 		View.addHandlerNewTodo(controlNewTodos);
 		View.addHandlerNewProject(controlNewProjects);
 		// for the asise
@@ -647,3 +658,9 @@ const Controller = (() => {
 // 2) Make form fields capitalize first letter.
 // 3) Create warning modal to verify before deleteing todo's or projects
 // 4) refactor model code to add helper functions for findTodoIndex and findProjectIndex to keep DRY
+
+const testDate = Date.parse("2022/09/10");
+// const testDate = new Date();
+// const formattedDate = lightFormat(testDate, "MM/dd/yyyy");
+// console.log(formattedDate);
+console.log(new Date(testDate));
