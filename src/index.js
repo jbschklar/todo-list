@@ -1,7 +1,15 @@
 "use strict";
 import _, { times, update } from "lodash";
 import "./style.css";
-import { compareAsc, compareDesc, lightFormat, isToday } from "date-fns";
+import {
+	compareAsc,
+	compareDesc,
+	lightFormat,
+	isToday,
+	isThisWeek,
+	isWithinInterval,
+	isPast,
+} from "date-fns";
 
 // View code ////////////////////////////////////////////////////////////////////////
 const View = (() => {
@@ -311,12 +319,27 @@ const View = (() => {
 const asideView = (() => {
 	const aside = document.querySelector("aside");
 	const projects = document.querySelector(".projects-list");
+	const todayTodos = document.querySelector(".today-list");
+	const weekTodos = document.querySelector(".week-list");
+	const threeDayTodos = document.querySelector(".three-day-list");
 
-	const renderToday = function (todayArr) {};
+	const renderAsideTodo = function (todo, list) {
+		const title = document.createElement("li");
+		title.innerHTML = `${todo.title}`;
+		list.appendChild(title);
+	};
 
-	const renderNext3Days = function () {};
+	const renderToday = function (todo) {
+		renderAsideTodo(todo, todayTodos);
+	};
 
-	const renderThisWeek = function () {};
+	const render3day = function (todo) {
+		renderAsideTodo(todo, threeDayTodos);
+	};
+
+	const renderWeek = function (todo) {
+		renderAsideTodo(todo, weekTodos);
+	};
 
 	const renderProject = function (project) {
 		const title = document.createElement("li");
@@ -349,7 +372,13 @@ const asideView = (() => {
 		});
 	};
 
-	return { renderProject, addHandlerDeleteProject };
+	return {
+		renderToday,
+		render3day,
+		renderWeek,
+		renderProject,
+		addHandlerDeleteProject,
+	};
 })();
 
 // Model code //////////////////////////////////////////////////////
@@ -364,6 +393,34 @@ const Model = (() => {
 		state.todosArr.map((todo) => {
 			if (isToday(new Date(todo.dueDate))) todayArr.push(todo);
 		});
+		return todayArr;
+	};
+
+	const createThreeDayArr = function () {
+		const threeDayArr = [];
+
+		state.todosArr.map((todo) => {
+			const today = new Date();
+			const threeDays = new Date().setDate(today.getDate() + 3);
+			if (
+				isWithinInterval(new Date(todo.dueDate), {
+					start: new Date(),
+					end: threeDays,
+				})
+			) {
+				console.log("three days");
+				threeDayArr.push(todo);
+			}
+		});
+		return threeDayArr;
+	};
+
+	const createWeekArr = function () {
+		const weekArr = [];
+		state.todosArr.map((todo) => {
+			if (isThisWeek(new Date(todo.dueDate))) weekArr.push(todo);
+		});
+		return weekArr;
 	};
 
 	const createTodo = function (obj) {
@@ -484,6 +541,9 @@ const Model = (() => {
 		createTodo,
 		createStep,
 		createProject,
+		createTodayArr,
+		createThreeDayArr,
+		createWeekArr,
 		deleteTodo,
 		deleteStep,
 		editStep,
@@ -640,6 +700,9 @@ const Controller = (() => {
 				asideView.renderProject(project);
 				asideView.addHandlerDeleteProject(controlDeleteProject, project);
 			});
+		Model.createTodayArr().forEach((t) => asideView.renderToday(t));
+		Model.createWeekArr().forEach((t) => asideView.renderWeek(t));
+		Model.createThreeDayArr().forEach((t) => asideView.render3day(t));
 	};
 
 	init();
@@ -665,9 +728,9 @@ const Controller = (() => {
 // 2.b) add escape function for selection of none from projects folder options ✅
 // 2.c) add populateFolder fn to the click of folder icon and make current project the first in the list ✅
 // 3) Organize todos by date in main display. ✅
-// 3.b) organize each date range portion of aside. ⬅️
-// 4) Populate main display with selected todo/project from aside on select
-// 5) Add ability to delete todo from projectsArr
+// 3.b) organize each date range portion of aside. ✅
+// 4) Populate main display with selected todo/project from aside on select ⬅️
+// 5) Add ability to delete todo from projectsArr ✅
 
 // Over all:
 // 1) Create buttons to hide/reveal forms for todos and projects.
@@ -675,8 +738,16 @@ const Controller = (() => {
 // 3) Create warning modal to verify before deleteing todo's or projects
 // 4) refactor model code to add helper functions for findTodoIndex and findProjectIndex to keep DRY
 
-const testDate = Date.parse("2022/09/10");
-// const testDate = new Date();
-// const formattedDate = lightFormat(testDate, "MM/dd/yyyy");
-// console.log(formattedDate);
-console.log(new Date(testDate));
+// const testDate = Date.parse("2022/09/10");
+// // const testDate = new Date();
+// // const formattedDate = lightFormat(testDate, "MM/dd/yyyy");
+// // console.log(formattedDate);
+// console.log(new Date(testDate));
+
+// let testDate = new Date();
+// const result = isWithinInterval(testDate, {
+// 	start: testDate,
+// 	end: testDate.setDate(testDate.getDate() + 3),
+// });
+// // testDate.setDate(testDate.getDate() + 3);
+// console.log(testDate, result);
