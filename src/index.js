@@ -18,8 +18,8 @@ const View = (() => {
 	const createTodoBtn = document.querySelector(".create-todo-btn");
 	const createProjectBtn = document.querySelector(".create-project-btn");
 
-	// to toggle dropdowns
-	body.addEventListener("click", (e) => {
+	// to toggle todo checklist and notes dropdowns via listener before element is created
+	mainContainer.addEventListener("click", (e) => {
 		// for notes section of todo's in main display
 		if (
 			e.target.closest("svg") &&
@@ -38,15 +38,6 @@ const View = (() => {
 			checkList.classList.toggle("active");
 			return;
 		}
-		// for aside category dropdowns
-		if (!e.target.closest("aside")) return;
-		const target = e.target.closest(".collapsible-aside");
-		const list = target.nextElementSibling;
-		const icons = target.querySelectorAll(".dropdown-icon");
-		list.classList.toggle("active");
-		icons.forEach((icon) => {
-			icon.classList.toggle("active");
-		});
 	});
 
 	const renderMainArea = function (obj) {
@@ -145,6 +136,11 @@ const View = (() => {
     `;
 		mainContainer.insertAdjacentHTML("beforeend", todo);
 	};
+
+	const clearMainArea = function () {
+		mainContainer.innerHTML = "";
+	};
+
 	// renders checklist under the todo as a drop down menu from todo obj
 	const renderCheckList = function (todo) {
 		const stepList = document
@@ -299,6 +295,7 @@ const View = (() => {
 
 	return {
 		renderMainArea,
+		clearMainArea,
 		renderCheckList,
 		todoFormInputs,
 		projectFormInput,
@@ -318,28 +315,18 @@ const View = (() => {
 
 const asideView = (() => {
 	const aside = document.querySelector("aside");
-	const projects = document.querySelector(".projects-list");
-	const todayTodos = document.querySelector(".today-list");
-	const weekTodos = document.querySelector(".week-list");
-	const threeDayTodos = document.querySelector(".three-day-list");
+	const projectsCollapsible = aside.querySelector(".collapsible-aside");
+	const asideIcons = aside.querySelectorAll("i");
+	const projectList = document.querySelector(".projects-list");
+	const asidePopTargets = aside.querySelectorAll(".pop-target");
 
-	const renderAsideTodo = function (todo, list) {
-		const title = document.createElement("li");
-		title.innerHTML = `${todo.title}`;
-		list.appendChild(title);
-	};
-
-	const renderToday = function (todo) {
-		renderAsideTodo(todo, todayTodos);
-	};
-
-	const render3day = function (todo) {
-		renderAsideTodo(todo, threeDayTodos);
-	};
-
-	const renderWeek = function (todo) {
-		renderAsideTodo(todo, weekTodos);
-	};
+	// to control dropdown list of projects
+	projectsCollapsible.addEventListener("click", (e) => {
+		projectList.classList.toggle("active");
+		asideIcons.forEach((icon) => {
+			icon.classList.toggle("active");
+		});
+	});
 
 	const renderProject = function (project) {
 		const title = document.createElement("li");
@@ -359,7 +346,7 @@ const asideView = (() => {
 		</g>
 	</svg>`
 		}`;
-		projects.appendChild(title);
+		projectList.appendChild(title);
 	};
 
 	const addHandlerDeleteProject = function (handler, project) {
@@ -372,12 +359,24 @@ const asideView = (() => {
 		});
 	};
 
+	const addHandlerPopFromAside = function (handler) {
+		asidePopTargets.forEach((popTarget) => {
+			popTarget.addEventListener("click", (e) => {
+				const targetTitle = e.target.textContent;
+				handler(targetTitle);
+			});
+		});
+	};
+
+	const addHandlerPopfromProject = function (handler) {
+		projectList;
+		// add function to target li's (maybe by project id added in renderer) and render main area from that project's todos arr
+	};
+
 	return {
-		renderToday,
-		render3day,
-		renderWeek,
 		renderProject,
 		addHandlerDeleteProject,
+		addHandlerPopFromAside,
 	};
 })();
 
@@ -560,6 +559,8 @@ const Model = (() => {
 
 // Controller //////////////////////////////////////////////////////
 const Controller = (() => {
+	// to set the active list of todos to render and sort in main view area via control fn's
+	let activeArr = Model.state.todosArr;
 	// fn to create todos from form and add to todosArr
 	const controlNewTodos = function () {
 		const newTodo = Model.createTodo(View.todoFormInputs());
@@ -655,23 +656,33 @@ const Controller = (() => {
 		Model.deleteProject(id);
 	};
 
-	const controlSortAsc = function (name) {
-		const displayArr = Model.state.todosArr;
-		displayArr.sort((a, b) =>
+	const controlSortAsc = function () {
+		activeArr.sort((a, b) =>
 			compareAsc(new Date(a.dueDate), new Date(b.dueDate))
 		);
-		displayArr.forEach((t) => {
+		activeArr.forEach((t) => {
 			todoFeatures(t);
 		});
 	};
 
-	const controlSortDsc = function (nome) {
-		const displayArr = Model.state.todosArr;
-		displayArr.sort((a, b) =>
+	const controlSortDsc = function () {
+		activeArr.sort((a, b) =>
 			compareDesc(new Date(a.dueDate), new Date(b.dueDate))
 		);
-		displayArr.forEach((t) => {
+		activeArr.forEach((t) => {
 			todoFeatures(t);
+		});
+	};
+
+	const controlPopFromAside = function (title) {
+		console.log(title);
+		if (title === "All Todos") activeArr = Model.state.todosArr;
+		if (title === "Today") activeArr = Model.createTodayArr();
+		if (title === "Next 3 Days") activeArr = Model.createThreeDayArr();
+		if (title === "This Week") activeArr = Model.createWeekArr();
+		View.clearMainArea();
+		activeArr.forEach((todo) => {
+			View.renderMainArea(todo);
 		});
 	};
 
@@ -700,9 +711,8 @@ const Controller = (() => {
 				asideView.renderProject(project);
 				asideView.addHandlerDeleteProject(controlDeleteProject, project);
 			});
-		Model.createTodayArr().forEach((t) => asideView.renderToday(t));
-		Model.createWeekArr().forEach((t) => asideView.renderWeek(t));
-		Model.createThreeDayArr().forEach((t) => asideView.render3day(t));
+
+		asideView.addHandlerPopFromAside(controlPopFromAside);
 	};
 
 	init();
@@ -729,7 +739,7 @@ const Controller = (() => {
 // 2.c) add populateFolder fn to the click of folder icon and make current project the first in the list ✅
 // 3) Organize todos by date in main display. ✅
 // 3.b) organize each date range portion of aside. ✅
-// 4) Populate main display with selected todo/project from aside on select ⬅️
+// 4) Populate main display with selected todo/project from aside on select ✅
 // 5) Add ability to delete todo from projectsArr ✅
 
 // Over all:
@@ -737,17 +747,4 @@ const Controller = (() => {
 // 2) Make form fields capitalize first letter.
 // 3) Create warning modal to verify before deleteing todo's or projects
 // 4) refactor model code to add helper functions for findTodoIndex and findProjectIndex to keep DRY
-
-// const testDate = Date.parse("2022/09/10");
-// // const testDate = new Date();
-// // const formattedDate = lightFormat(testDate, "MM/dd/yyyy");
-// // console.log(formattedDate);
-// console.log(new Date(testDate));
-
-// let testDate = new Date();
-// const result = isWithinInterval(testDate, {
-// 	start: testDate,
-// 	end: testDate.setDate(testDate.getDate() + 3),
-// });
-// // testDate.setDate(testDate.getDate() + 3);
-// console.log(testDate, result);
+// 5) create warning or coloring for todos if they are past due( use isPast fn), maybe red border or font?
