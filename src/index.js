@@ -239,10 +239,12 @@ const View = (() => {
 	};
 	//creates tempObj from todo form to send to controller fn
 	const todoFormInputs = () => {
-		const titleField = document.getElementById("title");
+		const titleField = document.getElementById("todo-title");
 		const title = titleField.value;
+		if (!title) return false;
 		const dueDateField = document.getElementById("due-date");
 		const dueDate = Date.parse(dueDateField.value.replaceAll("-", "/"));
+		if (!dueDate) return false;
 		// to clear input fields
 		titleField.value = "";
 		dueDateField.value = "";
@@ -253,6 +255,7 @@ const View = (() => {
 	const projectFormInput = () => {
 		const titleField = document.getElementById("project-title");
 		const title = titleField.value;
+		if (!title) return false;
 		// to clear input field
 		titleField.value = "";
 		return { title };
@@ -368,15 +371,20 @@ const asideView = (() => {
 		});
 	};
 
-	const addHandlerPopfromProject = function (handler) {
-		projectList;
-		// add function to target li's (maybe by project id added in renderer) and render main area from that project's todos arr
+	const addHandlerPopfromProject = function (project, handler) {
+		// to prevent error from searching for non-existant icons on None
+		if (project.title === "None") return;
+		const projectLI = document.getElementById(`${project.id}`).closest("li");
+		projectLI.addEventListener("click", (e) => {
+			handler(project.id);
+		});
 	};
 
 	return {
 		renderProject,
 		addHandlerDeleteProject,
 		addHandlerPopFromAside,
+		addHandlerPopfromProject,
 	};
 })();
 
@@ -423,6 +431,7 @@ const Model = (() => {
 	};
 
 	const createTodo = function (obj) {
+		if (!obj) return;
 		return {
 			title: obj.title,
 			dueDate: obj.dueDate,
@@ -437,6 +446,7 @@ const Model = (() => {
 	};
 
 	const createProject = function (obj) {
+		if (!obj) return;
 		return {
 			title: obj.title,
 			todos: [],
@@ -444,8 +454,14 @@ const Model = (() => {
 		};
 	};
 
+	const findProjectByID = function (id) {
+		const index = state.projectsArr.findIndex((project) => project.id === id);
+		const targetProject = state.projectsArr[index];
+		return targetProject;
+	};
+
 	// to find the todo's assigned project if already assigned
-	const findCurrentProject = function (todo) {
+	const findProjectByTodo = function (todo) {
 		let currentProject;
 		state.projectsArr.forEach((p) => {
 			if (p.todos.some((obj) => obj.id === todo.id)) {
@@ -461,22 +477,16 @@ const Model = (() => {
 		const index = state.projectsArr.findIndex(
 			(project) => project.title === projectTitle
 		);
-		// state.projectsArr[index].todos = [todo];
 		state.projectsArr[index].todos.push(todo);
 		persistProjects();
-		// console.log(state.projectsArr);
 	};
 
 	const removeProjectTodo = function (todo) {
-		const currentProject = findCurrentProject(todo);
+		const currentProject = findProjectByTodo(todo);
+		console.log(currentProject);
 		if (!currentProject) return;
-		const projectIndex = state.projectsArr.findIndex(
-			(project) => project.id === currentProject.id
-		);
-		const todoIndex = state.projectsArr[projectIndex].todos.findIndex(
-			(t) => t.id === todo.id
-		);
-		state.projectsArr[projectIndex].todos.splice(todoIndex, 1);
+		const todoIndex = currentProject.todos.findIndex((t) => t.id === todo.id);
+		currentProject.todos.splice(todoIndex, 1);
 		persistProjects();
 	};
 
@@ -553,7 +563,8 @@ const Model = (() => {
 		persistProjects,
 		addProjectTodo,
 		removeProjectTodo,
-		findCurrentProject,
+		findProjectByTodo,
+		findProjectByID,
 	};
 })();
 
@@ -564,8 +575,7 @@ const Controller = (() => {
 	// fn to create todos from form and add to todosArr
 	const controlNewTodos = function () {
 		const newTodo = Model.createTodo(View.todoFormInputs());
-
-		console.log(Model.state.todosArr);
+		if (!newTodo) return;
 		View.renderMainArea(newTodo);
 		View.addHandlerChecklistUpdate(controlChecklistUpdates, newTodo);
 		Model.state.todosArr.push(newTodo);
@@ -632,16 +642,24 @@ const Controller = (() => {
 		projectsArr = Model.state.projectsArr
 	) {
 		// fn to look for todo's assigned project and pass as argument to attatch selected attribute
-		const selectedProject = Model.findCurrentProject(todo);
+		const selectedProject = Model.findProjectByTodo(todo);
 		View.populateProjFolder(todo, projectsArr, selectedProject);
 	};
 
 	const controlNewProjects = function () {
 		const newProject = Model.createProject(View.projectFormInput());
+		if (!newProject) return;
 		Model.state.projectsArr.push(newProject);
 		Model.persistProjects();
-		asideView.renderProject(newProject);
-		asideView.addHandlerDeleteProject(controlDeleteProject, newProject);
+		projectFeatures(newProject);
+	};
+
+	const controlPopFromProject = function (id) {
+		const project = Model.findProjectByID(id);
+		if (!project || !project.todos) return;
+		activeArr = project.todos;
+		View.clearMainArea();
+		project.todos.forEach((todo) => todoFeatures(todo));
 	};
 
 	const controlProjectAssign = function (projectTitle, todo) {
@@ -654,6 +672,7 @@ const Controller = (() => {
 
 	const controlDeleteProject = function (id) {
 		Model.deleteProject(id);
+		View.clearMainArea();
 	};
 
 	const controlSortAsc = function () {
@@ -682,7 +701,7 @@ const Controller = (() => {
 		if (title === "This Week") activeArr = Model.createWeekArr();
 		View.clearMainArea();
 		activeArr.forEach((todo) => {
-			View.renderMainArea(todo);
+			todoFeatures(todo);
 		});
 	};
 
@@ -698,6 +717,12 @@ const Controller = (() => {
 		View.addHandlerProjectAssign(controlProjectAssign, todo);
 	};
 
+	const projectFeatures = function (project) {
+		asideView.renderProject(project);
+		asideView.addHandlerDeleteProject(controlDeleteProject, project);
+		asideView.addHandlerPopfromProject(project, controlPopFromProject);
+	};
+
 	const init = () => {
 		Model.state.todosArr.forEach((todo) => {
 			todoFeatures(todo);
@@ -708,10 +733,8 @@ const Controller = (() => {
 		// for the asise
 		if (Model.state.projectsArr)
 			Model.state.projectsArr.forEach((project) => {
-				asideView.renderProject(project);
-				asideView.addHandlerDeleteProject(controlDeleteProject, project);
+				projectFeatures(project);
 			});
-
 		asideView.addHandlerPopFromAside(controlPopFromAside);
 	};
 
@@ -748,3 +771,4 @@ const Controller = (() => {
 // 3) Create warning modal to verify before deleteing todo's or projects
 // 4) refactor model code to add helper functions for findTodoIndex and findProjectIndex to keep DRY
 // 5) create warning or coloring for todos if they are past due( use isPast fn), maybe red border or font?
+// 6) style the active date range being populated from to make it clear what is being shown
