@@ -743,6 +743,8 @@ const Controller = (() => {
 	};
 
 	Model.createProject("None");
+	Model.persistProjects();
+	console.log(Model.state.projectsArr);
 
 	init();
 })();
