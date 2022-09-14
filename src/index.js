@@ -419,7 +419,6 @@ const Model = (() => {
 					end: threeDays,
 				})
 			) {
-				console.log("three days");
 				threeDayArr.push(todo);
 			}
 		});
@@ -487,7 +486,6 @@ const Model = (() => {
 
 	const removeProjectTodo = function (todo) {
 		const currentProject = findProjectByTodo(todo);
-		console.log(currentProject);
 		if (!currentProject) return;
 		const todoIndex = currentProject.todos.findIndex((t) => t.id === todo.id);
 		currentProject.todos.splice(todoIndex, 1);
@@ -698,7 +696,6 @@ const Controller = (() => {
 	};
 
 	const controlPopFromAside = function (title) {
-		console.log(title);
 		if (title === "All Todos") activeArr = Model.state.todosArr;
 		if (title === "Today") activeArr = Model.createTodayArr();
 		if (title === "Next 3 Days") activeArr = Model.createThreeDayArr();
