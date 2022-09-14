@@ -396,7 +396,7 @@ const asideView = (() => {
 const Model = (() => {
 	const state = {
 		todosArr: [],
-		projectsArr: ["None"],
+		projectsArr: [],
 	};
 
 	const createTodayArr = function () {
@@ -741,6 +741,8 @@ const Controller = (() => {
 			});
 		asideView.addHandlerPopFromAside(controlPopFromAside);
 	};
+
+	Model.createProject("None");
 
 	init();
 })();
