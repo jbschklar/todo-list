@@ -209,3 +209,8 @@ aside li {
 	justify-content: center;
 	gap: 15px;
 }
+
+.past-due {
+	/* border: 2px solid rgb(218, 19, 19); */
+	color: rgb(218, 19, 19);
+}

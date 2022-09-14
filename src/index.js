@@ -56,7 +56,11 @@ const View = (() => {
             />
         </svg>
         <h2>${obj.title}</h2>
-        <p class="due-date">${lightFormat(obj.dueDate, "MM/dd/yyyy")}</p>
+        <p class="due-date ${
+					isPast(new Date(obj.dueDate)) && !isToday(new Date(obj.dueDate))
+						? "past-due"
+						: ""
+				}">${lightFormat(obj.dueDate, "MM/dd/yyyy")}</p>
         <div class="todo-icons">
 		<div class="folder-list-container">
 		<select class="projects-selector hidden" id="project-list-${obj.id}">
@@ -730,7 +734,7 @@ const Controller = (() => {
 		View.addHandlerSort(controlSortAsc, controlSortDsc);
 		View.addHandlerNewTodo(controlNewTodos);
 		View.addHandlerNewProject(controlNewProjects);
-		// for the asise
+		// for the aside
 		if (Model.state.projectsArr)
 			Model.state.projectsArr.forEach((project) => {
 				projectFeatures(project);
@@ -766,9 +770,10 @@ const Controller = (() => {
 // 5) Add ability to delete todo from projectsArr ✅
 
 // Over all:
-// 1) Create buttons to hide/reveal forms for todos and projects.
-// 2) Make form fields capitalize first letter.
+// 1) Create buttons to hide/reveal forms for todos and projects. ❎
+// 2) Make form fields capitalize first letter. ✅
 // 3) Create warning modal to verify before deleteing todo's or projects
-// 4) refactor model code to add helper functions for findTodoIndex and findProjectIndex to keep DRY
-// 5) create warning or coloring for todos if they are past due( use isPast fn), maybe red border or font?
-// 6) style the active date range being populated from to make it clear what is being shown
+// 4) refactor model code to add helper functions for findTodoIndex and findProjectIndex to keep DRY ✅
+// 5) create warning or coloring for todos if they are past due( use isPast fn), maybe red border or font? ✅
+// 6) style the active date range being populated from to make it clear what is being shown.
+// 7) get style sheet items in order w/ comments.
