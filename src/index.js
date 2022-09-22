@@ -396,7 +396,7 @@ const asideView = (() => {
 const Model = (() => {
 	const state = {
 		todosArr: [],
-		projectsArr: [],
+		projectsArr: [{title: 'None'}],
 	};
 
 	const createTodayArr = function () {
@@ -725,10 +725,6 @@ const Controller = (() => {
 	};
 
 	const init = () => {
-		const initNone = Model.createProject({title : "None"});
-		Model.state.projectsArr.push(initNone);
-		Model.persistProjects();
-
 		Model.state.todosArr.forEach((todo) => {
 			todoFeatures(todo);
 		});
