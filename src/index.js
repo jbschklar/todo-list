@@ -725,6 +725,10 @@ const Controller = (() => {
 	};
 
 	const init = () => {
+		const initNone = Model.createProject({title : "None"});
+		Model.state.projectsArr.push(initNone);
+		Model.persistProjects();
+
 		Model.state.todosArr.forEach((todo) => {
 			todoFeatures(todo);
 		});
@@ -739,8 +743,6 @@ const Controller = (() => {
 		asideView.addHandlerPopFromAside(controlPopFromAside);
 	};
 
-	Model.createProject("None");
-	Model.persistProjects();
 	console.log(Model.state.projectsArr);
 
 	init();
