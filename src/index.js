@@ -467,6 +467,7 @@ const Model = (() => {
 	const findProjectByTodo = function (todo) {
 		let currentProject;
 		state.projectsArr.forEach((p) => {
+			if(!p.todos) return;
 			if (p.todos.some((obj) => obj.id === todo.id)) {
 				currentProject = p;
 				return;
@@ -738,8 +739,6 @@ const Controller = (() => {
 			});
 		asideView.addHandlerPopFromAside(controlPopFromAside);
 	};
-
-	console.log(Model.state.projectsArr);
 
 	init();
 })();
