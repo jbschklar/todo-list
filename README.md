@@ -15,3 +15,5 @@ Directions:
 - each Todo has a checklist icon and a notepad icon. Click on each to reveal areas to add steps or notes.
 - double click on a submitted step to edit.
 - to delete a Todo, click the delete icon on the main display, and to delete a project, click the delete icon next to the title in the aside project area.
+
+For a live preview, visit jbschklar.github.io/todo-list
